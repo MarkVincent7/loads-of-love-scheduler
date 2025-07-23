@@ -91,7 +91,7 @@ export default function Home() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <p className="text-gray-600 mb-2">Christ's Loving Hands - Loads of Love</p>
           <p className="text-sm text-gray-500">
-            Questions? Contact us at (555) 123-4567 or info@christslovinghands.org
+            Questions? Contact us at 513-367-7746 or info@christslovinghands.org
           </p>
         </div>
       </footer>
