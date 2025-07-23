@@ -8,6 +8,14 @@ This is a mobile-first event scheduling application for Christ's Loving Hands "L
 
 Preferred communication style: Simple, everyday language.
 
+## Recent Changes
+
+**January 23, 2025**
+- Removed header component from home page for embedding capability
+- Created admin user creation script
+- Set up default admin credentials (admin/password123)
+- Admin login available at `/admin/login`
+
 ## System Architecture
 
 ### Frontend Architecture
