@@ -1,0 +1,291 @@
+Create a mobile-first event scheduling application for Christ's Loving Hands "Loads of Love" free laundry program. The app allows community members to reserve time slots for free laundry events and provides comprehensive admin management tools.
+Core User Experience Flow
+Public Landing Page
+
+Clean, minimal design focused on time slot selection
+Christ's Loving Hands logo in header
+Simple page title: "Reserve Your Spot"
+Brief subtitle: "Choose your preferred time slot and complete your reservation below."
+Direct display of available time slots as clickable cards showing:
+
+Date (e.g., "Tuesday, July 29, 2025")
+Time range (e.g., "5:30 PM - 6:30 PM")
+Availability (e.g., "5 spots left" in green text)
+
+
+Time slots arranged in a responsive grid (2 columns on mobile, more on larger screens)
+Selected time slot highlights with blue border/background
+Click to select, click again to deselect functionality
+Below time slots: minimal "How It Works" section with 3 numbered steps
+Mobile-first responsive design with clean typography
+
+Reservation Process
+
+Time Slot Selection: Click directly on time slot cards to select (no separate page)
+Inline Registration Form: Form appears below time slots after selection
+Form Fields: Name, email, phone number (all required) in clean, simple layout
+Submit Button: "Reserve My Spot" button
+Confirmation: Success message with event details and unique cancel link
+Email Confirmation: Automated email with event details and cancel link
+SMS Reminders: Day before and day of event notifications with cancel link
+
+Waitlist Flow
+
+When slots are full, show "Join Waitlist" option
+Collect same information as regular signup
+When slot opens, send immediate notification to first waitlist person
+30-minute response window before moving to next person
+
+Admin Dashboard Features
+Event Management
+
+Create New Event: Set date, location, time slots (start/end times), capacity per slot
+Clone Event: Duplicate existing event with new date/time
+Edit Active Events: Modify details, add/remove time slots
+Event Overview: Real-time dashboard showing all active events
+
+Attendee Management
+
+View Registrations: List all confirmed attendees by event and time slot
+Waitlist Management: View and manually promote waitlist members
+Check-in System: Mark attendees as present/no-show
+Communication Tools: Send bulk SMS/email to specific events or time slots
+
+Blacklist Management
+
+Add to Blacklist: Block by name, email, and phone number combinations
+View Blacklisted Users: Manage and remove from blacklist
+No-show Tracking: Automatically suggest blacklisting after multiple no-shows
+
+Data Export & Analytics
+
+CSV Export: Full attendee lists with filters (date range, event, status)
+PDF Reports: Individual event summaries with attendee lists
+Analytics Dashboard: No-show rates, popular time slots, recurring attendees
+
+Admin User Management
+
+Multi-admin Support: Add/remove admin users (3-5 expected)
+Secure Authentication: Password-protected admin area with session management
+
+Technical Stack & Architecture
+Frontend Framework
+
+Next.js 14 with App Router for modern React development
+Tailwind CSS for mobile-first responsive styling with clean, minimal design
+Headless UI for accessible form components and time slot selection
+React Hook Form with Zod validation for inline form handling
+SWR for real-time availability updates on time slot cards
+
+Backend & Database
+
+Replit Database for data persistence
+Next.js API Routes for backend logic
+Prisma as ORM with SQLite adapter for Replit
+bcryptjs for admin password hashing
+jsonwebtoken for admin session management
+
+External Integrations
+
+MailerSend API for email confirmations and notifications using official SDK
+Custom VOIP API for SMS notifications (provide webhook endpoints)
+React-PDF for generating PDF reports
+CSV-writer for data exports
+
+Key Libraries
+json{
+  "dependencies": {
+    "next": "^14.0.0",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "prisma": "^5.0.0",
+    "@prisma/client": "^5.0.0",
+    "tailwindcss": "^3.4.0",
+    "@headlessui/react": "^1.7.0",
+    "react-hook-form": "^7.48.0",
+    "@hookform/resolvers": "^3.3.0",
+    "zod": "^3.22.0",
+    "swr": "^2.2.0",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.0",
+    "uuid": "^9.0.0",
+    "date-fns": "^2.30.0",
+    "@react-pdf/renderer": "^3.1.0",
+    "csv-writer": "^1.6.0",
+    "mailersend": "^2.0.0"
+  }
+}
+Database Schema
+Tables Needed
+sql-- Events table
+Events {
+  id: String (UUID, Primary Key)
+  title: String
+  description: String
+  date: DateTime
+  location: String
+  createdAt: DateTime
+  updatedAt: DateTime
+}
+
+-- TimeSlots table
+TimeSlots {
+  id: String (UUID, Primary Key)
+  eventId: String (Foreign Key to Events)
+  startTime: DateTime
+  endTime: DateTime
+  capacity: Int
+  createdAt: DateTime
+}
+
+-- Registrations table
+Registrations {
+  id: String (UUID, Primary Key)
+  eventId: String (Foreign Key to Events)
+  timeSlotId: String (Foreign Key to TimeSlots)
+  name: String
+  email: String
+  phone: String
+  status: Enum (confirmed, waitlist, cancelled, no_show)
+  uniqueCancelToken: String (UUID)
+  createdAt: DateTime
+  updatedAt: DateTime
+}
+
+-- Blacklist table
+Blacklist {
+  id: String (UUID, Primary Key)
+  name: String
+  email: String
+  phone: String
+  reason: String
+  createdAt: DateTime
+}
+
+-- Admins table
+Admins {
+  id: String (UUID, Primary Key)
+  username: String (Unique)
+  passwordHash: String
+  email: String
+  createdAt: DateTime
+}
+API Endpoints Structure
+Public APIs
+
+GET /api/events - Get active events with availability
+POST /api/register - Register for time slot or join waitlist
+POST /api/cancel/:token - Cancel registration using unique token
+GET /api/event/:id - Get specific event details
+
+Admin APIs (Protected)
+
+POST /api/admin/login - Admin authentication
+POST /api/admin/events - Create new event
+PUT /api/admin/events/:id - Update event
+DELETE /api/admin/events/:id - Delete event
+POST /api/admin/events/:id/clone - Clone event
+GET /api/admin/registrations - Get all registrations with filters
+POST /api/admin/blacklist - Add to blacklist
+GET /api/admin/export/csv - Export CSV data
+GET /api/admin/export/pdf/:eventId - Generate PDF report
+POST /api/admin/notify - Send bulk notifications
+
+Key Implementation Details
+Blacklist Validation
+
+Check name (fuzzy match), email (exact), and phone (exact) during registration
+Show error: "Unable to register. Please contact Christ's Loving Hands at [phone]"
+Log blacklist attempts for admin review
+
+Unique Cancel Links
+
+Generate UUID for each registration as uniqueCancelToken
+Cancel URL format: /cancel/:token
+Automatically email waitlist when slot opens
+
+Real-time Updates
+
+Use SWR for auto-refreshing availability counts
+WebSocket consideration for admin dashboard live updates
+Optimistic UI updates for better UX
+
+SMS Integration Points
+
+Registration confirmation
+Day before reminder (send at 6 PM)
+Day of reminder (send 2 hours before slot)
+Waitlist promotion notification
+All SMS include cancel link
+
+Error Handling & Validation
+
+Form validation with Zod schemas
+Rate limiting on registration endpoints
+Duplicate registration prevention (same email/phone for same event)
+Graceful fallbacks for external API failures
+
+Security Considerations
+
+Admin session tokens with expiration
+CSRF protection on forms
+Input sanitization for all user data
+Secure cancel token generation and validation
+
+File Structure
+/
+├── pages/
+│   ├── api/
+│   │   ├── events/
+│   │   ├── register/
+│   │   ├── cancel/
+│   │   └── admin/
+│   ├── admin/
+│   │   ├── dashboard.js
+│   │   ├── events.js
+│   │   ├── registrations.js
+│   │   └── blacklist.js
+│   ├── cancel/[token].js
+│   └── index.js (main landing page with time slots)
+├── components/
+│   ├── TimeSlotCard.js (individual clickable time slot)
+│   ├── TimeSlotGrid.js (responsive grid of time slots)
+│   ├── InlineRegistrationForm.js (appears after selection)
+│   ├── HowItWorksSection.js (minimal 3-step process)
+│   ├── AdminLayout.js
+│   └── Header.js (logo and simple nav)
+├── lib/
+│   ├── prisma.js
+│   ├── auth.js
+│   ├── email.js
+│   ├── sms.js
+│   └── utils.js
+├── prisma/
+│   └── schema.prisma
+└── public/
+    └── clh-logo.png
+Environment Variables Needed
+DATABASE_URL=
+MAILERSEND_API_KEY=
+VOIP_API_KEY=
+VOIP_API_URL=
+JWT_SECRET=
+NEXTAUTH_SECRET=
+CLH_PHONE_NUMBER=
+Deployment Considerations
+
+Configure Replit secrets for environment variables
+Set up Prisma migrations for database initialization
+Configure custom domain for embedding in CLH website
+Set up monitoring for external API failures
+Implement backup strategy for registration data
+
+Success Metrics
+
+Registration completion rate
+No-show percentage reduction
+Admin time saved on event management
+User satisfaction with mobile experience
+System uptime and reliability
+
+Build this as a production-ready application with proper error handling, user feedback, and admin tools for ongoing management. Focus on reliability since this serves community members who depend on this service.
