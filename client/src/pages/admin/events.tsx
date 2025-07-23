@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useLocation } from "wouter";
 import AdminLayout from "@/components/admin-layout";
+import CreateEventDialog from "@/components/create-event-dialog";
 import { useAuthStore } from "@/lib/auth";
 import { useEvents } from "@/hooks/use-events";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -31,7 +32,9 @@ export default function AdminEvents() {
             <h1 className="text-2xl font-bold text-gray-900">Events</h1>
             <p className="text-gray-600">Manage your events and time slots</p>
           </div>
-          <Button>Create New Event</Button>
+          <CreateEventDialog>
+            <Button>Create New Event</Button>
+          </CreateEventDialog>
         </div>
 
         {isLoading ? (
@@ -79,7 +82,9 @@ export default function AdminEvents() {
           <Card>
             <CardContent className="text-center py-8">
               <p className="text-gray-500 mb-4">No events found</p>
-              <Button>Create Your First Event</Button>
+              <CreateEventDialog>
+                <Button>Create Your First Event</Button>
+              </CreateEventDialog>
             </CardContent>
           </Card>
         )}

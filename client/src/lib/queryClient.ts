@@ -7,14 +7,31 @@ async function throwIfResNotOk(res: Response) {
   }
 }
 
+import { getAuthToken } from "./auth";
+
 export async function apiRequest(
   method: string,
   url: string,
   data?: unknown | undefined,
+  requiresAuth: boolean = false
 ): Promise<Response> {
+  const headers: Record<string, string> = {};
+  
+  if (data) {
+    headers["Content-Type"] = "application/json";
+  }
+  
+  // Add auth token for admin routes
+  if (requiresAuth || url.includes('/admin/')) {
+    const token = getAuthToken();
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+  }
+
   const res = await fetch(url, {
     method,
-    headers: data ? { "Content-Type": "application/json" } : {},
+    headers,
     body: data ? JSON.stringify(data) : undefined,
     credentials: "include",
   });
@@ -29,7 +46,19 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
-    const res = await fetch(queryKey.join("/") as string, {
+    const url = queryKey.join("/") as string;
+    const headers: Record<string, string> = {};
+    
+    // Add auth token for admin routes
+    if (url.includes('/admin/')) {
+      const token = getAuthToken();
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+    }
+    
+    const res = await fetch(url, {
+      headers,
       credentials: "include",
     });
 

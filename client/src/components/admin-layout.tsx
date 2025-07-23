@@ -81,16 +81,14 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
               
               return (
                 <li key={item.name}>
-                  <Link href={item.href}>
-                    <a className={cn(
-                      "flex items-center space-x-3 px-3 py-2 rounded-lg font-medium transition-colors",
-                      isActive 
-                        ? "bg-primary-50 text-primary-700" 
-                        : "text-gray-700 hover:bg-gray-100"
-                    )}>
-                      <Icon className="w-5 h-5" />
-                      <span>{item.name}</span>
-                    </a>
+                  <Link href={item.href} className={cn(
+                    "flex items-center space-x-3 px-3 py-2 rounded-lg font-medium transition-colors",
+                    isActive 
+                      ? "bg-primary-50 text-primary-700" 
+                      : "text-gray-700 hover:bg-gray-100"
+                  )}>
+                    <Icon className="w-5 h-5" />
+                    <span>{item.name}</span>
                   </Link>
                 </li>
               );

@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useLocation } from "wouter";
 import AdminLayout from "@/components/admin-layout";
+import AddBlacklistDialog from "@/components/add-blacklist-dialog";
 import { useAuthStore } from "@/lib/auth";
 import { useBlacklist } from "@/hooks/use-admin";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -29,7 +30,9 @@ export default function AdminBlacklist() {
             <h1 className="text-2xl font-bold text-gray-900">Blacklist</h1>
             <p className="text-gray-600">Manage blocked users</p>
           </div>
-          <Button>Add to Blacklist</Button>
+          <AddBlacklistDialog>
+            <Button>Add to Blacklist</Button>
+          </AddBlacklistDialog>
         </div>
 
         <Card>
