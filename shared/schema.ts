@@ -1,0 +1,147 @@
+import { pgTable, text, serial, timestamp, integer, uuid, pgEnum, varchar } from "drizzle-orm/pg-core";
+import { relations } from "drizzle-orm";
+import { createInsertSchema } from "drizzle-zod";
+import { z } from "zod";
+
+// Enums
+export const registrationStatusEnum = pgEnum('registration_status', ['confirmed', 'waitlist', 'cancelled', 'no_show']);
+
+// Events table
+export const events = pgTable("events", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  title: text("title").notNull(),
+  description: text("description"),
+  date: timestamp("date").notNull(),
+  location: text("location").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+// TimeSlots table
+export const timeSlots = pgTable("time_slots", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  eventId: uuid("event_id").notNull().references(() => events.id, { onDelete: 'cascade' }),
+  startTime: timestamp("start_time").notNull(),
+  endTime: timestamp("end_time").notNull(),
+  capacity: integer("capacity").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+// Registrations table
+export const registrations = pgTable("registrations", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  eventId: uuid("event_id").notNull().references(() => events.id, { onDelete: 'cascade' }),
+  timeSlotId: uuid("time_slot_id").notNull().references(() => timeSlots.id, { onDelete: 'cascade' }),
+  name: text("name").notNull(),
+  email: text("email").notNull(),
+  phone: text("phone").notNull(),
+  status: registrationStatusEnum("status").notNull().default('confirmed'),
+  uniqueCancelToken: uuid("unique_cancel_token").notNull().defaultRandom(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+// Blacklist table
+export const blacklist = pgTable("blacklist", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  name: text("name").notNull(),
+  email: text("email").notNull(),
+  phone: text("phone").notNull(),
+  reason: text("reason").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+// Admins table
+export const admins = pgTable("admins", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  username: text("username").notNull().unique(),
+  passwordHash: text("password_hash").notNull(),
+  email: text("email").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+// Relations
+export const eventsRelations = relations(events, ({ many }) => ({
+  timeSlots: many(timeSlots),
+  registrations: many(registrations),
+}));
+
+export const timeSlotsRelations = relations(timeSlots, ({ one, many }) => ({
+  event: one(events, {
+    fields: [timeSlots.eventId],
+    references: [events.id],
+  }),
+  registrations: many(registrations),
+}));
+
+export const registrationsRelations = relations(registrations, ({ one }) => ({
+  event: one(events, {
+    fields: [registrations.eventId],
+    references: [events.id],
+  }),
+  timeSlot: one(timeSlots, {
+    fields: [registrations.timeSlotId],
+    references: [timeSlots.id],
+  }),
+}));
+
+// Insert schemas
+export const insertEventSchema = createInsertSchema(events).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertTimeSlotSchema = createInsertSchema(timeSlots).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertRegistrationSchema = createInsertSchema(registrations).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  uniqueCancelToken: true,
+}).extend({
+  name: z.string().min(1, "Name is required"),
+  email: z.string().email("Valid email is required"),
+  phone: z.string().min(10, "Valid phone number is required"),
+});
+
+export const insertBlacklistSchema = createInsertSchema(blacklist).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertAdminSchema = createInsertSchema(admins).omit({
+  id: true,
+  createdAt: true,
+  passwordHash: true,
+}).extend({
+  password: z.string().min(6, "Password must be at least 6 characters"),
+});
+
+// Types
+export type Event = typeof events.$inferSelect;
+export type InsertEvent = z.infer<typeof insertEventSchema>;
+export type TimeSlot = typeof timeSlots.$inferSelect;
+export type InsertTimeSlot = z.infer<typeof insertTimeSlotSchema>;
+export type Registration = typeof registrations.$inferSelect;
+export type InsertRegistration = z.infer<typeof insertRegistrationSchema>;
+export type Blacklist = typeof blacklist.$inferSelect;
+export type InsertBlacklist = z.infer<typeof insertBlacklistSchema>;
+export type Admin = typeof admins.$inferSelect;
+export type InsertAdmin = z.infer<typeof insertAdminSchema>;
+
+// Extended types for UI
+export type EventWithSlots = Event & {
+  timeSlots: (TimeSlot & { 
+    registrationCount: number;
+    waitlistCount: number;
+  })[];
+};
+
+export type RegistrationWithDetails = Registration & {
+  event: Event;
+  timeSlot: TimeSlot;
+};
