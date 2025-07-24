@@ -31,7 +31,7 @@ const registrationSchema = z.object({
   state: z.string().min(1, "State is required"),
   zipCode: z.string().refine(
     (zip) => VALID_ZIP_CODES.includes(zip),
-    { message: `Zip code must be one of: ${VALID_ZIP_CODES.join(", ")}` }
+    { message: "Zip code out of service area" }
   ),
 });
 
