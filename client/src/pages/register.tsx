@@ -313,9 +313,6 @@ export default function Register() {
                   {form.formState.errors.zipCode && (
                     <p className="text-sm text-red-600 mt-1">{form.formState.errors.zipCode.message}</p>
                   )}
-                  <p className="text-xs text-gray-500 mt-1">
-                    Service area zip codes: {VALID_ZIP_CODES.join(", ")}
-                  </p>
                 </div>
               </div>
 
