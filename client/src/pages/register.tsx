@@ -54,7 +54,7 @@ export default function Register() {
       address: "",
       city: "",
       state: "",
-      zipCode: "",
+      zipCode: "45030",
     },
   });
 
