@@ -370,15 +370,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Cancel registration
-  app.delete("/api/admin/registrations/:id", authMiddleware, async (req, res) => {
+  // Cancel registration (set status to cancelled)
+  app.put("/api/admin/registrations/:id/cancel", authMiddleware, async (req, res) => {
     try {
       const { id } = req.params;
-      await storage.cancelRegistration(id);
+      await storage.updateRegistrationStatus(id, 'cancelled');
       res.status(204).send();
     } catch (error) {
       console.error("Error cancelling registration:", error);
       res.status(500).json({ message: "Failed to cancel registration" });
+    }
+  });
+
+  // Delete registration (permanently remove)
+  app.delete("/api/admin/registrations/:id", authMiddleware, async (req, res) => {
+    try {
+      const { id } = req.params;
+      await storage.deleteRegistration(id);
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting registration:", error);
+      res.status(500).json({ message: "Failed to delete registration" });
     }
   });
   

@@ -3,6 +3,7 @@ import { useLocation } from "wouter";
 import AdminLayout from "@/components/admin-layout";
 import EditRegistrationDialog from "@/components/edit-registration-dialog";
 import CancelRegistrationDialog from "@/components/cancel-registration-dialog";
+import DeleteRegistrationDialog from "@/components/delete-registration-dialog";
 import { useAuthStore } from "@/lib/auth";
 import { useEvents } from "@/hooks/use-events";
 import { useRegistrations } from "@/hooks/use-admin";
@@ -13,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { format } from "date-fns";
-import { Search, Calendar, Clock, User, Phone, Mail } from "lucide-react";
+import { Search, Calendar, Clock, User, Phone, Mail, Trash2 } from "lucide-react";
 import type { Registration } from "@shared/schema";
 
 export default function AdminRegistrations() {
@@ -22,6 +23,8 @@ export default function AdminRegistrations() {
   const [selectedEventId, setSelectedEventId] = useState<string>("");
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [selectedRegistration, setSelectedRegistration] = useState<Registration | null>(null);
 
   const { data: events = [], isLoading: eventsLoading } = useEvents();
   const { data: registrations = [], isLoading: registrationsLoading } = useRegistrations(selectedEventId);
@@ -223,6 +226,16 @@ export default function AdminRegistrations() {
                               <EditRegistrationDialog registration={registration}>
                                 <Button variant="outline" size="sm">Edit</Button>
                               </EditRegistrationDialog>
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => {
+                                  setSelectedRegistration(registration);
+                                  setDeleteDialogOpen(true);
+                                }}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
                               {registration.status !== 'cancelled' && (
                                 <CancelRegistrationDialog registration={registration}>
                                   <Button variant="destructive" size="sm">Cancel</Button>
@@ -265,6 +278,15 @@ export default function AdminRegistrations() {
           </div>
         )}
       </div>
+
+      <DeleteRegistrationDialog
+        registration={selectedRegistration}
+        isOpen={deleteDialogOpen}
+        onClose={() => {
+          setDeleteDialogOpen(false);
+          setSelectedRegistration(null);
+        }}
+      />
     </AdminLayout>
   );
 }

@@ -40,7 +40,9 @@ export interface IStorage {
   updateRegistration(id: string, registration: Partial<InsertRegistration>): Promise<Registration>;
   cancelRegistration(token: string): Promise<void>;
   updateRegistrationStatus(id: string, status: 'confirmed' | 'waitlist' | 'cancelled' | 'no_show'): Promise<void>;
+  deleteRegistration(id: string): Promise<void>;
   checkDuplicateRegistration(email: string, phone: string, eventId: string): Promise<boolean>;
+  promoteFromWaitlist(eventId: string, timeSlotId: string): Promise<void>;
   
   // Blacklist
   addToBlacklist(blacklistItem: InsertBlacklist): Promise<Blacklist>;
@@ -236,6 +238,47 @@ export class DatabaseStorage implements IStorage {
         updatedAt: new Date()
       })
       .where(eq(registrations.id, id));
+  }
+
+  async deleteRegistration(id: string): Promise<void> {
+    const [registration] = await db
+      .select()
+      .from(registrations)
+      .where(eq(registrations.id, id));
+    
+    if (registration) {
+      // Delete the registration
+      await db.delete(registrations).where(eq(registrations.id, id));
+      
+      // If it was confirmed, promote someone from waitlist
+      if (registration.status === 'confirmed') {
+        await this.promoteFromWaitlist(registration.eventId, registration.timeSlotId);
+      }
+    }
+  }
+
+  async promoteFromWaitlist(eventId: string, timeSlotId: string): Promise<void> {
+    // Find the oldest waitlist registration for this time slot
+    const [waitlistRegistration] = await db
+      .select()
+      .from(registrations)
+      .where(and(
+        eq(registrations.eventId, eventId),
+        eq(registrations.timeSlotId, timeSlotId),
+        eq(registrations.status, 'waitlist')
+      ))
+      .orderBy(asc(registrations.createdAt))
+      .limit(1);
+    
+    if (waitlistRegistration) {
+      await db
+        .update(registrations)
+        .set({
+          status: 'confirmed',
+          updatedAt: new Date()
+        })
+        .where(eq(registrations.id, waitlistRegistration.id));
+    }
   }
 
   async checkDuplicateRegistration(email: string, phone: string, eventId: string): Promise<boolean> {

@@ -161,7 +161,7 @@ export function useCancelRegistration() {
   
   return useMutation({
     mutationFn: async (registrationId: string) => {
-      await apiRequest("DELETE", `/api/admin/registrations/${registrationId}`);
+      await apiRequest("PUT", `/api/admin/registrations/${registrationId}/cancel`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/registrations"] });
@@ -175,6 +175,32 @@ export function useCancelRegistration() {
       toast({
         title: "Error",
         description: error.message || "Failed to cancel registration",
+        variant: "destructive",
+      });
+    },
+  });
+}
+
+export function useDeleteRegistration() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  
+  return useMutation({
+    mutationFn: async (registrationId: string) => {
+      await apiRequest("DELETE", `/api/admin/registrations/${registrationId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/registrations"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/events"] });
+      toast({
+        title: "Registration Deleted",
+        description: "Registration has been permanently deleted",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete registration",
         variant: "destructive",
       });
     },
