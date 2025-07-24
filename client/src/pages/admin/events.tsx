@@ -2,6 +2,10 @@ import { useEffect } from "react";
 import { useLocation } from "wouter";
 import AdminLayout from "@/components/admin-layout";
 import CreateEventDialog from "@/components/create-event-dialog";
+import EditEventDialog from "@/components/edit-event-dialog";
+import ViewEventDialog from "@/components/view-event-dialog";
+import CloneEventDialog from "@/components/clone-event-dialog";
+import DeleteEventDialog from "@/components/delete-event-dialog";
 import { useAuthStore } from "@/lib/auth";
 import { useEvents } from "@/hooks/use-events";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -68,10 +72,18 @@ export default function AdminEvents() {
                       {event.timeSlots.length} time slot{event.timeSlots.length !== 1 ? 's' : ''}
                     </p>
                     <div className="flex items-center space-x-2">
-                      <Button variant="outline" size="sm">Edit</Button>
-                      <Button variant="outline" size="sm">View</Button>
-                      <Button variant="outline" size="sm">Clone</Button>
-                      <Button variant="destructive" size="sm">Delete</Button>
+                      <EditEventDialog event={event}>
+                        <Button variant="outline" size="sm">Edit</Button>
+                      </EditEventDialog>
+                      <ViewEventDialog event={event}>
+                        <Button variant="outline" size="sm">View</Button>
+                      </ViewEventDialog>
+                      <CloneEventDialog event={event}>
+                        <Button variant="outline" size="sm">Clone</Button>
+                      </CloneEventDialog>
+                      <DeleteEventDialog event={event}>
+                        <Button variant="destructive" size="sm">Delete</Button>
+                      </DeleteEventDialog>
                     </div>
                   </div>
                 </CardContent>
