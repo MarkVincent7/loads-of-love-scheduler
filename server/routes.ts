@@ -314,6 +314,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to fetch registrations" });
     }
   });
+
+  // Update registration
+  app.put("/api/admin/registrations/:id", authMiddleware, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const registrationData = insertRegistrationSchema.partial().parse(req.body);
+      
+      const registration = await storage.updateRegistration(id, registrationData);
+      res.json(registration);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          message: "Invalid registration data",
+          errors: error.errors 
+        });
+      }
+      console.error("Error updating registration:", error);
+      res.status(500).json({ message: "Failed to update registration" });
+    }
+  });
+
+  // Cancel registration
+  app.delete("/api/admin/registrations/:id", authMiddleware, async (req, res) => {
+    try {
+      const { id } = req.params;
+      await storage.cancelRegistration(id);
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error cancelling registration:", error);
+      res.status(500).json({ message: "Failed to cancel registration" });
+    }
+  });
   
   // Add to blacklist
   app.post("/api/admin/blacklist", authMiddleware, async (req, res) => {

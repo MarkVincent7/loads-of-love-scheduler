@@ -124,6 +124,58 @@ export function useDeleteEvent() {
   });
 }
 
+export function useUpdateRegistration() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  
+  return useMutation({
+    mutationFn: async ({ id, registrationData }: { id: string; registrationData: any }) => {
+      const response = await apiRequest("PUT", `/api/admin/registrations/${id}`, registrationData);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/registrations"] });
+      toast({
+        title: "Registration Updated",
+        description: "Registration has been updated successfully",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update registration",
+        variant: "destructive",
+      });
+    },
+  });
+}
+
+export function useCancelRegistration() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  
+  return useMutation({
+    mutationFn: async (registrationId: string) => {
+      await apiRequest("DELETE", `/api/admin/registrations/${registrationId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/registrations"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/events"] });
+      toast({
+        title: "Registration Cancelled",
+        description: "Registration has been cancelled successfully",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to cancel registration",
+        variant: "destructive",
+      });
+    },
+  });
+}
+
 export function useAddToBlacklist() {
   const queryClient = useQueryClient();
   const { toast } = useToast();

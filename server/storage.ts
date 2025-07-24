@@ -36,6 +36,7 @@ export interface IStorage {
   createRegistration(registration: InsertRegistration): Promise<Registration>;
   getRegistrationsByEvent(eventId: string): Promise<RegistrationWithDetails[]>;
   getRegistrationByToken(token: string): Promise<Registration | undefined>;
+  updateRegistration(id: string, registration: Partial<InsertRegistration>): Promise<Registration>;
   cancelRegistration(token: string): Promise<void>;
   updateRegistrationStatus(id: string, status: 'confirmed' | 'waitlist' | 'cancelled' | 'no_show'): Promise<void>;
   checkDuplicateRegistration(email: string, phone: string, eventId: string): Promise<boolean>;
@@ -197,6 +198,18 @@ export class DatabaseStorage implements IStorage {
       .from(registrations)
       .where(eq(registrations.uniqueCancelToken, token));
     return registration || undefined;
+  }
+
+  async updateRegistration(id: string, registration: Partial<InsertRegistration>): Promise<Registration> {
+    const [updatedRegistration] = await db
+      .update(registrations)
+      .set({
+        ...registration,
+        updatedAt: new Date()
+      })
+      .where(eq(registrations.id, id))
+      .returning();
+    return updatedRegistration;
   }
 
   async cancelRegistration(token: string): Promise<void> {
