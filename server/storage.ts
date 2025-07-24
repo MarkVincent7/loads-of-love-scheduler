@@ -4,6 +4,7 @@ import {
   registrations, 
   blacklist, 
   admins,
+  emailReminders,
   type Event, 
   type InsertEvent,
   type TimeSlot,
@@ -50,6 +51,11 @@ export interface IStorage {
   // Admins
   getAdminByUsername(username: string): Promise<Admin | undefined>;
   createAdmin(admin: InsertAdmin): Promise<Admin>;
+  
+  // Email reminders
+  getUpcomingRegistrations(): Promise<RegistrationWithDetails[]>;
+  checkReminderSent(registrationId: string, reminderType: 'day-before' | 'morning-of'): Promise<boolean>;
+  markReminderSent(registrationId: string, reminderType: 'day-before' | 'morning-of'): Promise<void>;
   
   // Analytics
   getEventStats(): Promise<{
@@ -284,11 +290,64 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createAdmin(admin: InsertAdmin): Promise<Admin> {
+    // Hash the password before storing
+    const { password, ...adminData } = admin;
+    const { hashPassword } = await import('./lib/auth');
+    const passwordHash = await hashPassword(password);
+    
     const [newAdmin] = await db
       .insert(admins)
-      .values(admin)
+      .values({
+        ...adminData,
+        passwordHash
+      })
       .returning();
     return newAdmin;
+  }
+
+  async getUpcomingRegistrations(): Promise<RegistrationWithDetails[]> {
+    const now = new Date();
+    const twoDaysFromNow = new Date(now.getTime() + (2 * 24 * 60 * 60 * 1000));
+    
+    const results = await db
+      .select({
+        registration: registrations,
+        event: events,
+        timeSlot: timeSlots,
+      })
+      .from(registrations)
+      .innerJoin(events, eq(registrations.eventId, events.id))
+      .innerJoin(timeSlots, eq(registrations.timeSlotId, timeSlots.id))
+      .where(and(
+        gte(timeSlots.startTime, now),
+        lte(timeSlots.startTime, twoDaysFromNow),
+        eq(registrations.status, 'confirmed')
+      ));
+    
+    return results.map(result => ({
+      ...result.registration,
+      event: result.event,
+      timeSlot: result.timeSlot,
+    }));
+  }
+
+  async checkReminderSent(registrationId: string, reminderType: 'day-before' | 'morning-of'): Promise<boolean> {
+    const result = await db
+      .select({ count: count() })
+      .from(emailReminders)
+      .where(and(
+        eq(emailReminders.registrationId, registrationId),
+        eq(emailReminders.reminderType, reminderType)
+      ));
+    
+    return (result[0]?.count || 0) > 0;
+  }
+
+  async markReminderSent(registrationId: string, reminderType: 'day-before' | 'morning-of'): Promise<void> {
+    await db.insert(emailReminders).values({
+      registrationId,
+      reminderType,
+    });
   }
 
   async getEventStats(): Promise<{

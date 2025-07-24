@@ -6,7 +6,7 @@ import { insertRegistrationSchema, insertEventSchema, insertTimeSlotSchema, inse
 import { authMiddleware } from "./middleware/auth";
 import { generateAuthToken, verifyPassword, hashPassword } from "./lib/auth";
 import { checkBlacklistMiddleware } from "./lib/blacklist";
-import { sendConfirmationEmail, sendReminderEmail } from "./lib/email";
+import { sendConfirmationEmail, sendReminderEmail } from "./lib/mailersend";
 import { sendConfirmationSMS, sendReminderSMS } from "./lib/sms";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -83,7 +83,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Send confirmation email and SMS
       try {
-        await sendConfirmationEmail(registration, targetSlot);
+        // Get event details for email
+        const event = await storage.getEvent(validatedData.eventId);
+        if (event) {
+          await sendConfirmationEmail({
+            name: registration.name,
+            email: registration.email,
+            eventTitle: event.title,
+            eventLocation: event.location,
+            startTime: targetSlot.startTime.toISOString(),
+            endTime: targetSlot.endTime.toISOString(),
+            cancelToken: registration.uniqueCancelToken
+          });
+        }
         await sendConfirmationSMS(registration, targetSlot);
       } catch (emailError) {
         console.error("Error sending confirmation:", emailError);

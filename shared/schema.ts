@@ -55,6 +55,14 @@ export const blacklist = pgTable("blacklist", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+// Email reminders tracking table
+export const emailReminders = pgTable("email_reminders", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  registrationId: uuid("registration_id").notNull().references(() => registrations.id, { onDelete: 'cascade' }),
+  reminderType: text("reminder_type").notNull(), // 'day-before' or 'morning-of'
+  sentAt: timestamp("sent_at").notNull().defaultNow(),
+});
+
 // Admins table
 export const admins = pgTable("admins", {
   id: uuid("id").primaryKey().defaultRandom(),
