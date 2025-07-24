@@ -225,10 +225,12 @@ export default function Register() {
               </div>
             </div>
 
-            <Button type="button" onClick={nextStep} className="w-full mt-6">
-              Continue to Address
-              <ArrowRight className="w-4 h-4 ml-2" />
-            </Button>
+            <div className="flex gap-3 mt-6">
+              <Button type="button" onClick={nextStep} className="flex-1">
+                Continue to Address
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            </div>
           </div>
         );
 
@@ -299,10 +301,16 @@ export default function Register() {
               </div>
             </div>
 
-            <Button type="button" onClick={nextStep} className="w-full mt-6">
-              Continue to Confirmation
-              <ArrowRight className="w-4 h-4 ml-2" />
-            </Button>
+            <div className="flex gap-3 mt-6">
+              <Button type="button" variant="outline" onClick={handleBack} className="flex-1">
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back
+              </Button>
+              <Button type="button" onClick={nextStep} className="flex-1">
+                Continue to Confirmation
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            </div>
           </div>
         );
 
@@ -377,24 +385,30 @@ export default function Register() {
               </div>
             </div>
 
-            <Button
-              type="button"
-              className="w-full mt-6"
-              disabled={registerMutation.isPending || !allChecklistCompleted}
-              onClick={form.handleSubmit(onSubmit)}
-            >
-              {registerMutation.isPending ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-                  Registering...
-                </>
-              ) : (
-                <>
-                  <CheckCircle className="w-4 h-4 mr-2" />
-                  Complete Registration
-                </>
-              )}
-            </Button>
+            <div className="flex gap-3 mt-6">
+              <Button type="button" variant="outline" onClick={handleBack} className="flex-1">
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back
+              </Button>
+              <Button
+                type="button"
+                className="flex-1"
+                disabled={registerMutation.isPending || !allChecklistCompleted}
+                onClick={form.handleSubmit(onSubmit)}
+              >
+                {registerMutation.isPending ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                    Registering...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle className="w-4 h-4 mr-2" />
+                    Complete Registration
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
         );
 
