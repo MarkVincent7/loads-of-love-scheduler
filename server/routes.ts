@@ -174,18 +174,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create new event
   app.post("/api/admin/events", authMiddleware, async (req, res) => {
     try {
-      const eventData = insertEventSchema.parse(req.body);
-      const { timeSlots: timeSlotsData, ...eventInfo } = req.body;
+      const { timeSlots: timeSlotsData, ...eventData } = req.body;
       
-      const event = await storage.createEvent(eventInfo);
+      // Parse and validate event data (this will handle date conversion)
+      const validatedEventData = insertEventSchema.parse({
+        ...eventData,
+        date: new Date(eventData.date) // Ensure proper date conversion
+      });
+      
+      const event = await storage.createEvent(validatedEventData);
       
       // Create time slots if provided
       if (timeSlotsData && Array.isArray(timeSlotsData)) {
         for (const slotData of timeSlotsData) {
-          await storage.createTimeSlot({
+          const validatedSlotData = insertTimeSlotSchema.parse({
             ...slotData,
-            eventId: event.id
+            eventId: event.id,
+            startTime: new Date(slotData.startTime),
+            endTime: new Date(slotData.endTime)
           });
+          await storage.createTimeSlot(validatedSlotData);
         }
       }
       

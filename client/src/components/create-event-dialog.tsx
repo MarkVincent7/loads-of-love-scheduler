@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useCreateEvent } from "@/hooks/use-admin";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -62,17 +62,17 @@ export default function CreateEventDialog({ children }: CreateEventDialogProps) 
 
   const onSubmit = (data: EventFormData) => {
     // Convert date and times to proper DateTime objects
-    const eventDate = new Date(data.date);
+    const eventDate = new Date(data.date + 'T00:00:00.000Z'); // Ensure proper UTC date parsing
     
     const formattedTimeSlots = data.timeSlots.map(slot => {
       const [startHour, startMinute] = slot.startTime.split(':');
       const [endHour, endMinute] = slot.endTime.split(':');
       
       const startTime = new Date(eventDate);
-      startTime.setHours(parseInt(startHour), parseInt(startMinute), 0, 0);
+      startTime.setUTCHours(parseInt(startHour), parseInt(startMinute), 0, 0);
       
       const endTime = new Date(eventDate);
-      endTime.setHours(parseInt(endHour), parseInt(endMinute), 0, 0);
+      endTime.setUTCHours(parseInt(endHour), parseInt(endMinute), 0, 0);
       
       return {
         startTime: startTime.toISOString(),
@@ -83,7 +83,7 @@ export default function CreateEventDialog({ children }: CreateEventDialogProps) 
 
     createEventMutation.mutate({
       title: data.title,
-      description: data.description,
+      description: data.description || "",
       date: eventDate.toISOString(),
       location: data.location,
       timeSlots: formattedTimeSlots,
@@ -103,6 +103,9 @@ export default function CreateEventDialog({ children }: CreateEventDialogProps) 
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Create New Event</DialogTitle>
+          <DialogDescription>
+            Create a new laundry event with time slots for community members to register.
+          </DialogDescription>
         </DialogHeader>
         
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">

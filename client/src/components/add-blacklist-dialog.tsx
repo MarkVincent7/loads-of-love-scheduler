@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useAddToBlacklist } from "@/hooks/use-admin";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -53,6 +53,9 @@ export default function AddBlacklistDialog({ children }: AddBlacklistDialogProps
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>Add to Blacklist</DialogTitle>
+          <DialogDescription>
+            Add a user to the blacklist to prevent them from registering for events.
+          </DialogDescription>
         </DialogHeader>
         
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
