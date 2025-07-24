@@ -134,8 +134,20 @@ export default function Register() {
     }
   };
 
-  const nextStep = () => {
-    if (currentStep < 3) {
+  const nextStep = async () => {
+    // Validate current step before proceeding
+    let fieldsToValidate: (keyof RegistrationFormData)[] = [];
+    
+    if (currentStep === 1) {
+      fieldsToValidate = ['name', 'email', 'phone'];
+    } else if (currentStep === 2) {
+      fieldsToValidate = ['address', 'city', 'state', 'zipCode'];
+    }
+    
+    // Trigger validation for current step fields
+    const isValid = await form.trigger(fieldsToValidate);
+    
+    if (isValid && currentStep < 3) {
       setCurrentStep(currentStep + 1);
     }
   };
@@ -295,9 +307,6 @@ export default function Register() {
                 {form.formState.errors.zipCode && (
                   <p className="text-xs text-red-600 mt-1">{form.formState.errors.zipCode.message}</p>
                 )}
-                <p className="text-xs text-gray-500 mt-1">
-                  Valid zip codes: {VALID_ZIP_CODES.join(", ")}
-                </p>
               </div>
             </div>
 
