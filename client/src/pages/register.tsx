@@ -178,7 +178,139 @@ export default function Register() {
         return (
           <div className="space-y-4">
             <div className="text-center mb-4">
-              <h2 className="text-lg font-semibold mb-2">Important Information</h2>
+              <h2 className="text-lg font-semibold">Contact Information</h2>
+              <p className="text-sm text-gray-600">We'll use this to confirm your appointment</p>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="name" className="text-sm font-medium">Full Name *</Label>
+                <Input
+                  id="name"
+                  {...form.register("name")}
+                  placeholder="Enter your full name"
+                  className="mt-1"
+                />
+                {form.formState.errors.name && (
+                  <p className="text-xs text-red-600 mt-1">{form.formState.errors.name.message}</p>
+                )}
+              </div>
+
+              <div>
+                <Label htmlFor="email" className="text-sm font-medium">Email Address *</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  {...form.register("email")}
+                  placeholder="your.email@example.com"
+                  className="mt-1"
+                />
+                {form.formState.errors.email && (
+                  <p className="text-xs text-red-600 mt-1">{form.formState.errors.email.message}</p>
+                )}
+              </div>
+
+              <div>
+                <Label htmlFor="phone" className="text-sm font-medium">Phone Number *</Label>
+                <Input
+                  id="phone"
+                  type="tel"
+                  {...form.register("phone")}
+                  placeholder="(555) 123-4567"
+                  className="mt-1"
+                />
+                {form.formState.errors.phone && (
+                  <p className="text-xs text-red-600 mt-1">{form.formState.errors.phone.message}</p>
+                )}
+              </div>
+            </div>
+
+            <Button type="button" onClick={nextStep} className="w-full mt-6">
+              Continue to Address
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+          </div>
+        );
+
+      case 2:
+        return (
+          <div className="space-y-4">
+            <div className="text-center mb-4">
+              <h2 className="text-lg font-semibold">Address Information</h2>
+              <p className="text-sm text-gray-600">Service available in select zip codes only</p>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="address" className="text-sm font-medium">Street Address *</Label>
+                <Input
+                  id="address"
+                  {...form.register("address")}
+                  placeholder="123 Main Street"
+                  className="mt-1"
+                />
+                {form.formState.errors.address && (
+                  <p className="text-xs text-red-600 mt-1">{form.formState.errors.address.message}</p>
+                )}
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label htmlFor="city" className="text-sm font-medium">City *</Label>
+                  <Input
+                    id="city"
+                    {...form.register("city")}
+                    placeholder="City"
+                    className="mt-1"
+                  />
+                  {form.formState.errors.city && (
+                    <p className="text-xs text-red-600 mt-1">{form.formState.errors.city.message}</p>
+                  )}
+                </div>
+
+                <div>
+                  <Label htmlFor="state" className="text-sm font-medium">State *</Label>
+                  <Input
+                    id="state"
+                    {...form.register("state")}
+                    placeholder="OH"
+                    className="mt-1"
+                  />
+                  {form.formState.errors.state && (
+                    <p className="text-xs text-red-600 mt-1">{form.formState.errors.state.message}</p>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="zipCode" className="text-sm font-medium">Zip Code *</Label>
+                <Input
+                  id="zipCode"
+                  {...form.register("zipCode")}
+                  placeholder="45030"
+                  className="mt-1"
+                />
+                {form.formState.errors.zipCode && (
+                  <p className="text-xs text-red-600 mt-1">{form.formState.errors.zipCode.message}</p>
+                )}
+                <p className="text-xs text-gray-500 mt-1">
+                  Valid zip codes: {VALID_ZIP_CODES.join(", ")}
+                </p>
+              </div>
+            </div>
+
+            <Button type="button" onClick={nextStep} className="w-full mt-6">
+              Continue to Confirmation
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+          </div>
+        );
+
+      case 3:
+        return (
+          <div className="space-y-4">
+            <div className="text-center mb-4">
+              <h2 className="text-lg font-semibold mb-2">Confirm Your Appointment</h2>
               <p className="text-sm text-gray-600 mb-4">Please review and confirm you understand:</p>
             </div>
 
@@ -247,145 +379,8 @@ export default function Register() {
 
             <Button
               type="button"
-              onClick={nextStep}
               className="w-full mt-6"
-              disabled={!allChecklistCompleted}
-            >
-              Continue to Contact Info
-              <ArrowRight className="w-4 h-4 ml-2" />
-            </Button>
-          </div>
-        );
-
-      case 2:
-        return (
-          <div className="space-y-4">
-            <div className="text-center mb-4">
-              <h2 className="text-lg font-semibold">Contact Information</h2>
-              <p className="text-sm text-gray-600">We'll use this to confirm your appointment</p>
-            </div>
-
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="name" className="text-sm font-medium">Full Name *</Label>
-                <Input
-                  id="name"
-                  {...form.register("name")}
-                  placeholder="Enter your full name"
-                  className="mt-1"
-                />
-                {form.formState.errors.name && (
-                  <p className="text-xs text-red-600 mt-1">{form.formState.errors.name.message}</p>
-                )}
-              </div>
-
-              <div>
-                <Label htmlFor="email" className="text-sm font-medium">Email Address *</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  {...form.register("email")}
-                  placeholder="your.email@example.com"
-                  className="mt-1"
-                />
-                {form.formState.errors.email && (
-                  <p className="text-xs text-red-600 mt-1">{form.formState.errors.email.message}</p>
-                )}
-              </div>
-
-              <div>
-                <Label htmlFor="phone" className="text-sm font-medium">Phone Number *</Label>
-                <Input
-                  id="phone"
-                  type="tel"
-                  {...form.register("phone")}
-                  placeholder="(555) 123-4567"
-                  className="mt-1"
-                />
-                {form.formState.errors.phone && (
-                  <p className="text-xs text-red-600 mt-1">{form.formState.errors.phone.message}</p>
-                )}
-              </div>
-            </div>
-
-            <Button type="button" onClick={nextStep} className="w-full mt-6">
-              Continue to Address
-              <ArrowRight className="w-4 h-4 ml-2" />
-            </Button>
-          </div>
-        );
-
-      case 3:
-        return (
-          <div className="space-y-4">
-            <div className="text-center mb-4">
-              <h2 className="text-lg font-semibold">Address Information</h2>
-              <p className="text-sm text-gray-600">Service available in select zip codes only</p>
-            </div>
-
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="address" className="text-sm font-medium">Street Address *</Label>
-                <Input
-                  id="address"
-                  {...form.register("address")}
-                  placeholder="123 Main Street"
-                  className="mt-1"
-                />
-                {form.formState.errors.address && (
-                  <p className="text-xs text-red-600 mt-1">{form.formState.errors.address.message}</p>
-                )}
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label htmlFor="city" className="text-sm font-medium">City *</Label>
-                  <Input
-                    id="city"
-                    {...form.register("city")}
-                    placeholder="City"
-                    className="mt-1"
-                  />
-                  {form.formState.errors.city && (
-                    <p className="text-xs text-red-600 mt-1">{form.formState.errors.city.message}</p>
-                  )}
-                </div>
-
-                <div>
-                  <Label htmlFor="state" className="text-sm font-medium">State *</Label>
-                  <Input
-                    id="state"
-                    {...form.register("state")}
-                    placeholder="OH"
-                    className="mt-1"
-                  />
-                  {form.formState.errors.state && (
-                    <p className="text-xs text-red-600 mt-1">{form.formState.errors.state.message}</p>
-                  )}
-                </div>
-              </div>
-
-              <div>
-                <Label htmlFor="zipCode" className="text-sm font-medium">Zip Code *</Label>
-                <Input
-                  id="zipCode"
-                  {...form.register("zipCode")}
-                  placeholder="45030"
-                  className="mt-1"
-                />
-                {form.formState.errors.zipCode && (
-                  <p className="text-xs text-red-600 mt-1">{form.formState.errors.zipCode.message}</p>
-                )}
-                <p className="text-xs text-gray-500 mt-1">
-                  Valid zip codes: {VALID_ZIP_CODES.join(", ")}
-                </p>
-              </div>
-            </div>
-
-            <Button
-              type="button"
-              className="w-full mt-6"
-              disabled={registerMutation.isPending}
+              disabled={registerMutation.isPending || !allChecklistCompleted}
               onClick={form.handleSubmit(onSubmit)}
             >
               {registerMutation.isPending ? (
@@ -423,8 +418,8 @@ export default function Register() {
           </Button>
           <div className="flex-1">
             <h1 className="text-lg font-bold text-gray-900">
-              {currentStep === 1 ? "Appointment Details" : 
-               currentStep === 2 ? "Contact Information" : "Address Information"}
+              {currentStep === 1 ? "Contact Information" : 
+               currentStep === 2 ? "Address Information" : "Confirm Appointment"}
             </h1>
           </div>
         </div>
