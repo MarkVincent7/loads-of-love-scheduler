@@ -12,12 +12,14 @@ import AdminRegistrations from "@/pages/admin/registrations";
 import AdminBlacklist from "@/pages/admin/blacklist";
 import CancelRegistration from "@/pages/cancel/[token]";
 import Register from "@/pages/register";
+import RegistrationSuccess from "@/pages/registration-success";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/register" component={Register} />
+      <Route path="/registration-success" component={RegistrationSuccess} />
       <Route path="/admin/login" component={AdminLogin} />
       <Route path="/admin/dashboard" component={AdminDashboard} />
       <Route path="/admin/events" component={AdminEvents} />

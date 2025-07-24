@@ -98,19 +98,19 @@ export default function Register() {
       return response.json();
     },
     onSuccess: (data) => {
-      toast({
-        title: "Registration Successful!",
-        description: "You'll receive a confirmation email shortly.",
-        duration: 5000,
-      });
-      
       // Invalidate events cache to update availability
       queryClient.invalidateQueries({ queryKey: ['/api/events'] });
       
-      // Redirect to home page after success
-      setTimeout(() => {
-        setLocation('/');
-      }, 2000);
+      // Redirect to celebration page with registration details
+      const params = new URLSearchParams({
+        eventTitle: event?.title || '',
+        eventLocation: event?.location || '',
+        startTime: timeSlot?.startTime || '',
+        endTime: timeSlot?.endTime || '',
+        email: form.getValues('email')
+      });
+      
+      setLocation(`/registration-success?${params.toString()}`);
     },
     onError: (error: Error) => {
       toast({
