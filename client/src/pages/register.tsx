@@ -307,7 +307,7 @@ export default function Register() {
                   <Input
                     id="zipCode"
                     {...form.register("zipCode")}
-                    placeholder="45252"
+                    placeholder="45030"
                     className="mt-1"
                   />
                   {form.formState.errors.zipCode && (
