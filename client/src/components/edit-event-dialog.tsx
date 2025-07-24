@@ -50,7 +50,7 @@ export default function EditEventDialog({ children, event }: EditEventDialogProp
   }, [event, form]);
 
   const onSubmit = (data: EventFormData) => {
-    const eventDate = new Date(data.date + 'T00:00:00.000Z');
+    const eventDate = new Date(data.date);
 
     updateEventMutation.mutate({
       id: event.id,

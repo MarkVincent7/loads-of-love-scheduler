@@ -62,17 +62,17 @@ export default function CreateEventDialog({ children }: CreateEventDialogProps) 
 
   const onSubmit = (data: EventFormData) => {
     // Convert date and times to proper DateTime objects
-    const eventDate = new Date(data.date + 'T00:00:00.000Z'); // Ensure proper UTC date parsing
+    const eventDate = new Date(data.date); // Use local date parsing
     
     const formattedTimeSlots = data.timeSlots.map(slot => {
       const [startHour, startMinute] = slot.startTime.split(':');
       const [endHour, endMinute] = slot.endTime.split(':');
       
       const startTime = new Date(eventDate);
-      startTime.setUTCHours(parseInt(startHour), parseInt(startMinute), 0, 0);
+      startTime.setHours(parseInt(startHour), parseInt(startMinute), 0, 0);
       
       const endTime = new Date(eventDate);
-      endTime.setUTCHours(parseInt(endHour), parseInt(endMinute), 0, 0);
+      endTime.setHours(parseInt(endHour), parseInt(endMinute), 0, 0);
       
       return {
         startTime: startTime.toISOString(),
