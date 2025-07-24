@@ -10,13 +10,12 @@ export function useAdminStats() {
 
 export function useRegistrations(eventId?: string) {
   return useQuery({
-    queryKey: ["/api/admin/registrations", eventId],
-    queryFn: () => fetch(`/api/admin/registrations?eventId=${eventId}`, {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('auth-token')}`,
-        'Content-Type': 'application/json'
-      }
-    }).then(res => res.json()),
+    queryKey: ["/api/admin/registrations", { eventId }],
+    queryFn: async () => {
+      if (!eventId) return [];
+      const response = await apiRequest("GET", `/api/admin/registrations?eventId=${eventId}`, undefined, true);
+      return response.json();
+    },
     enabled: !!eventId,
   });
 }

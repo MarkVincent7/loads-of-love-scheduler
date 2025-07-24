@@ -40,7 +40,7 @@ export default function AdminRegistrations() {
   }
 
   // Filter registrations based on search and status
-  const filteredRegistrations = typedRegistrations.filter((registration: Registration) => {
+  const filteredRegistrations = Array.isArray(typedRegistrations) ? typedRegistrations.filter((registration: Registration) => {
     const matchesSearch = !searchTerm || 
       registration.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       registration.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -49,7 +49,7 @@ export default function AdminRegistrations() {
     const matchesStatus = statusFilter === "all" || registration.status === statusFilter;
     
     return matchesSearch && matchesStatus;
-  });
+  }) : [];
 
   return (
     <AdminLayout>

@@ -10,6 +10,13 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+**July 24, 2025**
+- Fixed registration display issue in admin dashboard
+- Resolved API route conflict between path-based and query-based endpoints
+- Updated frontend authentication handling for admin routes
+- Verified registration data flow from public form to admin dashboard
+- All registration functionality now working correctly
+
 **January 23, 2025**
 - Removed header component from home page for embedding capability
 - Created admin user creation script
