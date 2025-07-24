@@ -1,12 +1,8 @@
-import { useState } from "react";
 import TimeSlotGrid from "@/components/time-slot-grid";
-import RegistrationForm from "@/components/registration-form";
 import HowItWorks from "@/components/how-it-works";
 import { useEvents } from "@/hooks/use-events";
-import { type TimeSlot } from "@shared/schema";
 
 export default function Home() {
-  const [selectedTimeSlot, setSelectedTimeSlot] = useState<TimeSlot | null>(null);
   const { data: events, isLoading, error } = useEvents();
 
   if (error) {
@@ -58,8 +54,6 @@ export default function Home() {
           ) : events && events.length > 0 ? (
             <TimeSlotGrid 
               events={events} 
-              selectedTimeSlot={selectedTimeSlot}
-              onTimeSlotSelect={setSelectedTimeSlot}
             />
           ) : (
             <div className="mb-12">
@@ -70,13 +64,6 @@ export default function Home() {
                 There are no upcoming events scheduled at this time. Please check back later.
               </p>
             </div>
-          )}
-          
-          {selectedTimeSlot && (
-            <RegistrationForm 
-              timeSlot={selectedTimeSlot}
-              onSuccess={() => setSelectedTimeSlot(null)}
-            />
           )}
         </div>
       </section>

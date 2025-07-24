@@ -3,11 +3,9 @@ import TimeSlotCard from "./time-slot-card";
 
 interface TimeSlotGridProps {
   events: EventWithSlots[];
-  selectedTimeSlot: TimeSlot | null;
-  onTimeSlotSelect: (timeSlot: TimeSlot | null) => void;
 }
 
-export default function TimeSlotGrid({ events, selectedTimeSlot, onTimeSlotSelect }: TimeSlotGridProps) {
+export default function TimeSlotGrid({ events }: TimeSlotGridProps) {
   const allTimeSlots = events.flatMap(event => 
     event.timeSlots.map(slot => ({ ...slot, event }))
   );
@@ -32,14 +30,6 @@ export default function TimeSlotGrid({ events, selectedTimeSlot, onTimeSlotSelec
             key={slot.id}
             timeSlot={slot}
             event={slot.event}
-            isSelected={selectedTimeSlot?.id === slot.id}
-            onSelect={(timeSlot) => {
-              if (selectedTimeSlot?.id === timeSlot.id) {
-                onTimeSlotSelect(null);
-              } else {
-                onTimeSlotSelect(timeSlot);
-              }
-            }}
           />
         ))}
       </div>

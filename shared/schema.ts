@@ -35,6 +35,10 @@ export const registrations = pgTable("registrations", {
   name: text("name").notNull(),
   email: text("email").notNull(),
   phone: text("phone").notNull(),
+  address: text("address").notNull(),
+  city: text("city").notNull(),
+  state: text("state").notNull(),
+  zipCode: text("zip_code").notNull(),
   status: registrationStatusEnum("status").notNull().default('confirmed'),
   uniqueCancelToken: uuid("unique_cancel_token").notNull().defaultRandom(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
@@ -106,6 +110,10 @@ export const insertRegistrationSchema = createInsertSchema(registrations).omit({
   name: z.string().min(1, "Name is required"),
   email: z.string().email("Valid email is required"),
   phone: z.string().min(10, "Valid phone number is required"),
+  address: z.string().min(1, "Address is required"),
+  city: z.string().min(1, "City is required"),
+  state: z.string().min(1, "State is required"),
+  zipCode: z.string().min(5, "Valid zip code is required"),
 });
 
 export const insertBlacklistSchema = createInsertSchema(blacklist).omit({
