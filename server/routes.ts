@@ -303,12 +303,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Get all registrations with filters
+  // Get all registrations for a specific event
+  app.get("/api/admin/registrations/:eventId", authMiddleware, async (req, res) => {
+    try {
+      const { eventId } = req.params;
+      const { status } = req.query;
+      
+      console.log("Fetching registrations for event:", eventId);
+      const registrations = await storage.getRegistrationsByEvent(eventId);
+      console.log("Found registrations:", registrations.length);
+      
+      // Filter by status if provided
+      const filteredRegistrations = status 
+        ? registrations.filter(r => r.status === status)
+        : registrations;
+      
+      console.log("Filtered registrations:", filteredRegistrations.length);
+      res.setHeader('Content-Type', 'application/json');
+      res.json(filteredRegistrations);
+    } catch (error) {
+      console.error("Error fetching registrations:", error);
+      res.status(500).json({ message: "Failed to fetch registrations" });
+    }
+  });
+
+  // Get all registrations with filters (for general admin use)
   app.get("/api/admin/registrations", authMiddleware, async (req, res) => {
     try {
       const { eventId, status } = req.query;
       
-      // For now, get all registrations for a specific event
       if (!eventId) {
         return res.status(400).json({ message: "Event ID is required" });
       }
