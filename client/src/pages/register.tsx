@@ -9,7 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, Clock, Calendar, MapPin, User, Mail, Phone, Home } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ArrowLeft, ArrowRight, Clock, Calendar, MapPin, User, Mail, Phone, Home, CheckCircle, AlertCircle } from "lucide-react";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
@@ -39,6 +40,13 @@ type RegistrationFormData = z.infer<typeof registrationSchema>;
 export default function Register() {
   const [location, setLocation] = useLocation();
   const { toast } = useToast();
+  const [currentStep, setCurrentStep] = useState(1);
+  const [checkedItems, setCheckedItems] = useState({
+    noShow: false,
+    transportation: false,
+    appointmentTime: false,
+    location: false,
+  });
   
   // Get time slot ID from URL search params
   const urlParams = new URLSearchParams(window.location.search);
@@ -117,7 +125,23 @@ export default function Register() {
   };
 
   const handleBack = () => {
-    setLocation('/');
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+    } else {
+      setLocation('/');
+    }
+  };
+
+  const nextStep = () => {
+    if (currentStep < 3) {
+      setCurrentStep(currentStep + 1);
+    }
+  };
+
+  const allChecklistCompleted = Object.values(checkedItems).every(Boolean);
+
+  const handleCheckboxChange = (key: keyof typeof checkedItems) => {
+    setCheckedItems(prev => ({ ...prev, [key]: !prev[key] }));
   };
 
   if (isLoading) {
@@ -146,201 +170,295 @@ export default function Register() {
     );
   }
 
+  const renderStepContent = () => {
+    switch (currentStep) {
+      case 1:
+        return (
+          <div className="space-y-4">
+            <div className="text-center mb-4">
+              <h2 className="text-lg font-semibold mb-2">Important Information</h2>
+              <p className="text-sm text-gray-600 mb-4">Please review and confirm you understand:</p>
+            </div>
+
+            {/* Appointment Details */}
+            <div className="bg-blue-50 p-4 rounded-lg space-y-3 mb-4">
+              <div className="flex items-center text-sm">
+                <Calendar className="w-4 h-4 mr-2 text-blue-600" />
+                <span className="font-medium">{format(new Date(timeSlot.startTime), 'EEEE, MMMM d, yyyy')}</span>
+              </div>
+              <div className="flex items-center text-sm">
+                <Clock className="w-4 h-4 mr-2 text-blue-600" />
+                <span>{format(new Date(timeSlot.startTime), 'h:mm a')} - {format(new Date(timeSlot.endTime), 'h:mm a')}</span>
+              </div>
+              <div className="flex items-center text-sm">
+                <MapPin className="w-4 h-4 mr-2 text-blue-600" />
+                <span>{event.location}</span>
+              </div>
+            </div>
+
+            {/* Checklist */}
+            <div className="space-y-3">
+              <div className="flex items-start space-x-3">
+                <Checkbox
+                  id="no-show"
+                  checked={checkedItems.noShow}
+                  onCheckedChange={() => handleCheckboxChange('noShow')}
+                />
+                <Label htmlFor="no-show" className="text-sm leading-5">
+                  I understand that if I don't show up without canceling within 24 hours, I may not be able to participate in future events.
+                </Label>
+              </div>
+
+              <div className="flex items-start space-x-3">
+                <Checkbox
+                  id="transportation"
+                  checked={checkedItems.transportation}
+                  onCheckedChange={() => handleCheckboxChange('transportation')}
+                />
+                <Label htmlFor="transportation" className="text-sm leading-5">
+                  I have or will arrange transportation to get to my appointment.
+                </Label>
+              </div>
+
+              <div className="flex items-start space-x-3">
+                <Checkbox
+                  id="appointment-time"
+                  checked={checkedItems.appointmentTime}
+                  onCheckedChange={() => handleCheckboxChange('appointmentTime')}
+                />
+                <Label htmlFor="appointment-time" className="text-sm leading-5">
+                  I confirm my appointment day and time: {format(new Date(timeSlot.startTime), 'EEEE, MMMM d')} at {format(new Date(timeSlot.startTime), 'h:mm a')}
+                </Label>
+              </div>
+
+              <div className="flex items-start space-x-3">
+                <Checkbox
+                  id="location"
+                  checked={checkedItems.location}
+                  onCheckedChange={() => handleCheckboxChange('location')}
+                />
+                <Label htmlFor="location" className="text-sm leading-5">
+                  I know the location: {event.location}
+                </Label>
+              </div>
+            </div>
+
+            <Button
+              onClick={nextStep}
+              className="w-full mt-6"
+              disabled={!allChecklistCompleted}
+            >
+              Continue to Contact Info
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+          </div>
+        );
+
+      case 2:
+        return (
+          <div className="space-y-4">
+            <div className="text-center mb-4">
+              <h2 className="text-lg font-semibold">Contact Information</h2>
+              <p className="text-sm text-gray-600">We'll use this to confirm your appointment</p>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="name" className="text-sm font-medium">Full Name *</Label>
+                <Input
+                  id="name"
+                  {...form.register("name")}
+                  placeholder="Enter your full name"
+                  className="mt-1"
+                />
+                {form.formState.errors.name && (
+                  <p className="text-xs text-red-600 mt-1">{form.formState.errors.name.message}</p>
+                )}
+              </div>
+
+              <div>
+                <Label htmlFor="email" className="text-sm font-medium">Email Address *</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  {...form.register("email")}
+                  placeholder="your.email@example.com"
+                  className="mt-1"
+                />
+                {form.formState.errors.email && (
+                  <p className="text-xs text-red-600 mt-1">{form.formState.errors.email.message}</p>
+                )}
+              </div>
+
+              <div>
+                <Label htmlFor="phone" className="text-sm font-medium">Phone Number *</Label>
+                <Input
+                  id="phone"
+                  type="tel"
+                  {...form.register("phone")}
+                  placeholder="(555) 123-4567"
+                  className="mt-1"
+                />
+                {form.formState.errors.phone && (
+                  <p className="text-xs text-red-600 mt-1">{form.formState.errors.phone.message}</p>
+                )}
+              </div>
+            </div>
+
+            <Button onClick={nextStep} className="w-full mt-6">
+              Continue to Address
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+          </div>
+        );
+
+      case 3:
+        return (
+          <div className="space-y-4">
+            <div className="text-center mb-4">
+              <h2 className="text-lg font-semibold">Address Information</h2>
+              <p className="text-sm text-gray-600">Service available in select zip codes only</p>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="address" className="text-sm font-medium">Street Address *</Label>
+                <Input
+                  id="address"
+                  {...form.register("address")}
+                  placeholder="123 Main Street"
+                  className="mt-1"
+                />
+                {form.formState.errors.address && (
+                  <p className="text-xs text-red-600 mt-1">{form.formState.errors.address.message}</p>
+                )}
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label htmlFor="city" className="text-sm font-medium">City *</Label>
+                  <Input
+                    id="city"
+                    {...form.register("city")}
+                    placeholder="City"
+                    className="mt-1"
+                  />
+                  {form.formState.errors.city && (
+                    <p className="text-xs text-red-600 mt-1">{form.formState.errors.city.message}</p>
+                  )}
+                </div>
+
+                <div>
+                  <Label htmlFor="state" className="text-sm font-medium">State *</Label>
+                  <Input
+                    id="state"
+                    {...form.register("state")}
+                    placeholder="OH"
+                    className="mt-1"
+                  />
+                  {form.formState.errors.state && (
+                    <p className="text-xs text-red-600 mt-1">{form.formState.errors.state.message}</p>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="zipCode" className="text-sm font-medium">Zip Code *</Label>
+                <Input
+                  id="zipCode"
+                  {...form.register("zipCode")}
+                  placeholder="45030"
+                  className="mt-1"
+                />
+                {form.formState.errors.zipCode && (
+                  <p className="text-xs text-red-600 mt-1">{form.formState.errors.zipCode.message}</p>
+                )}
+                <p className="text-xs text-gray-500 mt-1">
+                  Valid zip codes: {VALID_ZIP_CODES.join(", ")}
+                </p>
+              </div>
+            </div>
+
+            <Button
+              type="submit"
+              className="w-full mt-6"
+              disabled={registerMutation.isPending}
+              onClick={form.handleSubmit(onSubmit)}
+            >
+              {registerMutation.isPending ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                  Registering...
+                </>
+              ) : (
+                <>
+                  <CheckCircle className="w-4 h-4 mr-2" />
+                  Complete Registration
+                </>
+              )}
+            </Button>
+          </div>
+        );
+
+      default:
+        return null;
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 py-4">
-      <div className="max-w-md mx-auto px-4">
-        {/* Header */}
-        <div className="mb-6">
+      <div className="max-w-sm mx-auto px-4">
+        {/* Header with Back Button */}
+        <div className="flex items-center mb-4">
           <Button
             variant="ghost"
             size="sm"
             onClick={handleBack}
-            className="mb-4 p-0 h-auto"
+            className="p-0 h-auto mr-3"
           >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Time Slots
+            <ArrowLeft className="w-4 h-4" />
           </Button>
-          
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">
-            Complete Your Registration
-          </h1>
-          <p className="text-gray-600">
-            Fill out your information to reserve your spot
-          </p>
+          <div className="flex-1">
+            <h1 className="text-lg font-bold text-gray-900">
+              {currentStep === 1 ? "Appointment Details" : 
+               currentStep === 2 ? "Contact Information" : "Address Information"}
+            </h1>
+          </div>
         </div>
 
-        {/* Selected Time Slot Summary */}
-        <Card className="mb-6">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg">Selected Time Slot</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex items-center text-sm">
-              <Calendar className="w-4 h-4 mr-2 text-primary" />
-              <span>{format(new Date(timeSlot.startTime), 'EEEE, MMMM d, yyyy')}</span>
-            </div>
-            <div className="flex items-center text-sm">
-              <Clock className="w-4 h-4 mr-2 text-primary" />
-              <span>
-                {format(new Date(timeSlot.startTime), 'h:mm a')} - {format(new Date(timeSlot.endTime), 'h:mm a')}
-              </span>
-            </div>
-            <div className="flex items-center text-sm">
-              <MapPin className="w-4 h-4 mr-2 text-primary" />
-              <span>{event.location}</span>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Registration Form */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Your Information</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              {/* Personal Information */}
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="name" className="flex items-center">
-                    <User className="w-4 h-4 mr-2" />
-                    Full Name *
-                  </Label>
-                  <Input
-                    id="name"
-                    {...form.register("name")}
-                    placeholder="Enter your full name"
-                    className="mt-1"
-                  />
-                  {form.formState.errors.name && (
-                    <p className="text-sm text-red-600 mt-1">{form.formState.errors.name.message}</p>
-                  )}
-                </div>
-
-                <div>
-                  <Label htmlFor="email" className="flex items-center">
-                    <Mail className="w-4 h-4 mr-2" />
-                    Email Address *
-                  </Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    {...form.register("email")}
-                    placeholder="your.email@example.com"
-                    className="mt-1"
-                  />
-                  {form.formState.errors.email && (
-                    <p className="text-sm text-red-600 mt-1">{form.formState.errors.email.message}</p>
-                  )}
-                </div>
-
-                <div>
-                  <Label htmlFor="phone" className="flex items-center">
-                    <Phone className="w-4 h-4 mr-2" />
-                    Phone Number *
-                  </Label>
-                  <Input
-                    id="phone"
-                    type="tel"
-                    {...form.register("phone")}
-                    placeholder="(555) 123-4567"
-                    className="mt-1"
-                  />
-                  {form.formState.errors.phone && (
-                    <p className="text-sm text-red-600 mt-1">{form.formState.errors.phone.message}</p>
-                  )}
-                </div>
+        {/* Progress Indicator */}
+        <div className="flex items-center mb-6">
+          {[1, 2, 3].map((step) => (
+            <div key={step} className="flex items-center flex-1">
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+                currentStep >= step
+                  ? "bg-primary text-white"
+                  : "bg-gray-200 text-gray-600"
+              }`}>
+                {currentStep > step ? <CheckCircle className="w-4 h-4" /> : step}
               </div>
+              {step < 3 && (
+                <div className={`flex-1 h-0.5 mx-2 ${
+                  currentStep > step ? "bg-primary" : "bg-gray-200"
+                }`} />
+              )}
+            </div>
+          ))}
+        </div>
 
-              <Separator />
-
-              {/* Address Information */}
-              <div className="space-y-4">
-                <h3 className="font-medium flex items-center">
-                  <Home className="w-4 h-4 mr-2" />
-                  Address Information
-                </h3>
-
-                <div>
-                  <Label htmlFor="address">Street Address *</Label>
-                  <Input
-                    id="address"
-                    {...form.register("address")}
-                    placeholder="123 Main Street"
-                    className="mt-1"
-                  />
-                  {form.formState.errors.address && (
-                    <p className="text-sm text-red-600 mt-1">{form.formState.errors.address.message}</p>
-                  )}
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <Label htmlFor="city">City *</Label>
-                    <Input
-                      id="city"
-                      {...form.register("city")}
-                      placeholder="City"
-                      className="mt-1"
-                    />
-                    {form.formState.errors.city && (
-                      <p className="text-sm text-red-600 mt-1">{form.formState.errors.city.message}</p>
-                    )}
-                  </div>
-
-                  <div>
-                    <Label htmlFor="state">State *</Label>
-                    <Input
-                      id="state"
-                      {...form.register("state")}
-                      placeholder="OH"
-                      className="mt-1"
-                    />
-                    {form.formState.errors.state && (
-                      <p className="text-sm text-red-600 mt-1">{form.formState.errors.state.message}</p>
-                    )}
-                  </div>
-                </div>
-
-                <div>
-                  <Label htmlFor="zipCode">Zip Code *</Label>
-                  <Input
-                    id="zipCode"
-                    {...form.register("zipCode")}
-                    placeholder="45030"
-                    className="mt-1"
-                  />
-                  {form.formState.errors.zipCode && (
-                    <p className="text-sm text-red-600 mt-1">{form.formState.errors.zipCode.message}</p>
-                  )}
-                </div>
-              </div>
-
-              <Separator />
-
-              {/* Submit Button */}
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={registerMutation.isPending}
-              >
-                {registerMutation.isPending ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-                    Registering...
-                  </>
-                ) : (
-                  "Complete Registration"
-                )}
-              </Button>
+        {/* Main Card */}
+        <Card className="mb-4">
+          <CardContent className="p-6">
+            <form>
+              {renderStepContent()}
             </form>
           </CardContent>
         </Card>
 
-        {/* Footer Note */}
-        <div className="mt-6 text-center">
+        {/* Footer */}
+        <div className="text-center">
           <p className="text-xs text-gray-500">
-            You'll receive a confirmation email with your registration details and cancellation link.
+            Step {currentStep} of 3 • You'll receive email confirmation
           </p>
         </div>
       </div>
