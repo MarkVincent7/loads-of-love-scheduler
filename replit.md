@@ -44,6 +44,9 @@ Preferred communication style: Simple, everyday language.
 - Added slot availability notification emails that link users to complete registration
 - Updated time slot cards to open waitlist dialog instead of redirecting to full registration form
 - Modified backend to notify all waitlist members when slots become available (no automatic promotion)
+- Enhanced admin dashboard functionality to trigger waitlist notifications on all status changes
+- Added waitlist notification system to admin actions: status updates, cancellations, deletions, and no-show markings
+- All admin registration management actions now automatically notify waitlist when confirmed slots become available
 
 **July 24, 2025**
 - Fixed registration display issue in admin dashboard

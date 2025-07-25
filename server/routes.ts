@@ -530,7 +530,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { id } = req.params;
       const registrationData = insertRegistrationSchema.partial().parse(req.body);
       
+      // Get the original registration to check status change
+      const originalRegistration = await storage.getRegistrationById(id);
+      if (!originalRegistration) {
+        return res.status(404).json({ message: "Registration not found" });
+      }
+      
+      const wasConfirmed = originalRegistration.status === 'confirmed';
+      const becomingNonConfirmed = registrationData.status && 
+        ['cancelled', 'no-show'].includes(registrationData.status);
+      
       const registration = await storage.updateRegistration(id, registrationData);
+      
+      // If a confirmed registration becomes cancelled/no-show, notify waitlist
+      if (wasConfirmed && becomingNonConfirmed) {
+        try {
+          await storage.notifyWaitlist(originalRegistration.eventId, originalRegistration.timeSlotId);
+          console.log(`✓ Notified waitlist for time slot ${originalRegistration.timeSlotId} after admin status change`);
+        } catch (emailError) {
+          console.error("Error notifying waitlist after admin status change:", emailError);
+          // Don't fail the status update if email fails
+        }
+      }
+      
       res.json(registration);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -548,7 +570,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put("/api/admin/registrations/:id/cancel", authMiddleware, async (req, res) => {
     try {
       const { id } = req.params;
+      
+      // Get registration details before cancelling
+      const registration = await storage.getRegistrationById(id);
+      if (!registration) {
+        return res.status(404).json({ message: "Registration not found" });
+      }
+      
+      const wasConfirmed = registration.status === 'confirmed';
       await storage.updateRegistrationStatus(id, 'cancelled');
+      
+      // Notify waitlist if this was a confirmed registration
+      if (wasConfirmed) {
+        try {
+          await storage.notifyWaitlist(registration.eventId, registration.timeSlotId);
+          console.log(`✓ Notified waitlist for time slot ${registration.timeSlotId} after admin cancellation`);
+        } catch (emailError) {
+          console.error("Error notifying waitlist after admin cancellation:", emailError);
+          // Don't fail the cancellation if email fails
+        }
+      }
+      
       res.status(204).send();
     } catch (error) {
       console.error("Error cancelling registration:", error);
@@ -567,6 +609,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Registration not found" });
       }
       
+      const wasConfirmed = registration.status === 'confirmed';
+      
       // Update registration status to no-show
       await storage.updateRegistration(id, { status: 'no-show' });
       
@@ -574,9 +618,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await storage.addToBlacklist({
         name: registration.name,
         email: registration.email,
-        phone: registration.phone,
+        phone: registration.phone || '',
         reason: `No-show for event on ${new Date(registration.timeSlot.startTime).toLocaleDateString()}`
       });
+      
+      // Notify waitlist if this was a confirmed registration
+      if (wasConfirmed) {
+        try {
+          await storage.notifyWaitlist(registration.eventId, registration.timeSlotId);
+          console.log(`✓ Notified waitlist for time slot ${registration.timeSlotId} after no-show marking`);
+        } catch (emailError) {
+          console.error("Error notifying waitlist after no-show marking:", emailError);
+          // Don't fail the no-show marking if email fails
+        }
+      }
       
       res.json({ message: "Registration marked as no-show and added to blacklist" });
     } catch (error) {
@@ -589,7 +644,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/admin/registrations/:id", authMiddleware, async (req, res) => {
     try {
       const { id } = req.params;
+      
+      // Get registration details before deletion
+      const registration = await storage.getRegistrationById(id);
+      if (!registration) {
+        return res.status(404).json({ message: "Registration not found" });
+      }
+      
+      const wasConfirmed = registration.status === 'confirmed';
       await storage.deleteRegistration(id);
+      
+      // Notify waitlist if this was a confirmed registration
+      if (wasConfirmed) {
+        try {
+          await storage.notifyWaitlist(registration.eventId, registration.timeSlotId);
+          console.log(`✓ Notified waitlist for time slot ${registration.timeSlotId} after admin deletion`);
+        } catch (emailError) {
+          console.error("Error notifying waitlist after admin deletion:", emailError);
+          // Don't fail the deletion if email fails
+        }
+      }
+      
       res.status(204).send();
     } catch (error) {
       console.error("Error deleting registration:", error);
