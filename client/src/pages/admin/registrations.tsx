@@ -6,7 +6,7 @@ import CancelRegistrationDialog from "@/components/cancel-registration-dialog";
 import DeleteRegistrationDialog from "@/components/delete-registration-dialog";
 import { useAuthStore } from "@/lib/auth";
 import { useEvents } from "@/hooks/use-events";
-import { useRegistrations, useMarkAsNoShow } from "@/hooks/use-admin";
+import { useRegistrations, useMarkAsNoShow, useUpdateRegistration } from "@/hooks/use-admin";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -14,8 +14,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { format } from "date-fns";
-import { Search, Calendar, Clock, User, Phone, Mail, Trash2, UserX, ChevronDown, ChevronRight } from "lucide-react";
+import { Search, Calendar, Clock, User, Phone, Mail, Trash2, UserX, ChevronDown, ChevronRight, Check } from "lucide-react";
 import type { Registration } from "@shared/schema";
 
 interface EventRegistrationsTableProps {
@@ -23,6 +24,7 @@ interface EventRegistrationsTableProps {
   searchTerm: string;
   statusFilter: string;
   onMarkAsNoShow: (id: string) => void;
+  onStatusChange: (id: string, status: string) => void;
   setSelectedRegistration: (registration: Registration | null) => void;
   setDeleteDialogOpen: (open: boolean) => void;
 }
@@ -32,6 +34,7 @@ function EventRegistrationsTable({
   searchTerm, 
   statusFilter, 
   onMarkAsNoShow,
+  onStatusChange,
   setSelectedRegistration,
   setDeleteDialogOpen 
 }: EventRegistrationsTableProps) {
@@ -120,18 +123,54 @@ function EventRegistrationsTable({
                   )}
                 </TableCell>
                 <TableCell>
-                  <Badge 
-                    variant="outline"
-                    className={
-                      registration.status === 'confirmed' ? 'bg-green-100 text-green-800 border-green-300' :
-                      registration.status === 'waitlist' ? 'bg-orange-100 text-orange-800 border-orange-300' :
-                      registration.status === 'no_show' ? 'bg-red-100 text-red-800 border-red-300' :
-                      'bg-gray-100 text-gray-800 border-gray-300'
-                    }
-                  >
-                    {registration.status === 'no_show' ? 'No-Show' : 
-                     registration.status.charAt(0).toUpperCase() + registration.status.slice(1)}
-                  </Badge>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className={`cursor-pointer ${
+                          registration.status === 'confirmed' ? 'bg-green-100 text-green-800 border-green-300 hover:bg-green-200' :
+                          registration.status === 'waitlist' ? 'bg-orange-100 text-orange-800 border-orange-300 hover:bg-orange-200' :
+                          registration.status === 'no_show' ? 'bg-red-100 text-red-800 border-red-300 hover:bg-red-200' :
+                          'bg-gray-100 text-gray-800 border-gray-300 hover:bg-gray-200'
+                        }`}
+                      >
+                        {registration.status === 'no_show' ? 'No-Show' : 
+                         registration.status.charAt(0).toUpperCase() + registration.status.slice(1)}
+                        <ChevronDown className="ml-2 h-3 w-3" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem 
+                        onClick={() => onStatusChange(registration.id, 'confirmed')}
+                        className={registration.status === 'confirmed' ? 'bg-green-50' : ''}
+                      >
+                        {registration.status === 'confirmed' && <Check className="mr-2 h-4 w-4" />}
+                        <span className={registration.status !== 'confirmed' ? 'ml-6' : ''}>Confirmed</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        onClick={() => onStatusChange(registration.id, 'waitlist')}
+                        className={registration.status === 'waitlist' ? 'bg-orange-50' : ''}
+                      >
+                        {registration.status === 'waitlist' && <Check className="mr-2 h-4 w-4" />}
+                        <span className={registration.status !== 'waitlist' ? 'ml-6' : ''}>Waitlist</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        onClick={() => onStatusChange(registration.id, 'no_show')}
+                        className={registration.status === 'no_show' ? 'bg-red-50' : ''}
+                      >
+                        {registration.status === 'no_show' && <Check className="mr-2 h-4 w-4" />}
+                        <span className={registration.status !== 'no_show' ? 'ml-6' : ''}>No-Show</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        onClick={() => onStatusChange(registration.id, 'cancelled')}
+                        className={registration.status === 'cancelled' ? 'bg-gray-50' : ''}
+                      >
+                        {registration.status === 'cancelled' && <Check className="mr-2 h-4 w-4" />}
+                        <span className={registration.status !== 'cancelled' ? 'ml-6' : ''}>Cancelled</span>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </TableCell>
                 <TableCell>
                   <span className="text-sm text-gray-500">
@@ -144,18 +183,6 @@ function EventRegistrationsTable({
                       <Button variant="outline" size="sm">Edit</Button>
                     </EditRegistrationDialog>
                     
-                    {registration.status === 'confirmed' && (
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => onMarkAsNoShow(registration.id)}
-                        className="border-red-300 text-red-700 hover:bg-red-50"
-                      >
-                        <UserX className="h-4 w-4" />
-                        No-Show
-                      </Button>
-                    )}
-                    
                     <Button 
                       variant="outline" 
                       size="sm"
@@ -166,12 +193,6 @@ function EventRegistrationsTable({
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
-                    
-                    {registration.status !== 'cancelled' && registration.status !== 'no_show' && (
-                      <CancelRegistrationDialog registration={registration}>
-                        <Button variant="destructive" size="sm">Cancel</Button>
-                      </CancelRegistrationDialog>
-                    )}
                   </div>
                 </TableCell>
               </TableRow>
@@ -196,6 +217,7 @@ export default function AdminRegistrations() {
   const { data: events = [], isLoading: eventsLoading } = useEvents();
   const { data: registrations = [], isLoading: registrationsLoading } = useRegistrations(selectedEventId);
   const markAsNoShowMutation = useMarkAsNoShow();
+  const updateRegistrationMutation = useUpdateRegistration();
   
   // Type assertion for registrations since the hook returns unknown
   const typedRegistrations = registrations as Registration[];
@@ -237,6 +259,19 @@ export default function AdminRegistrations() {
 
   const handleMarkAsNoShow = (registrationId: string) => {
     markAsNoShowMutation.mutate(registrationId);
+  };
+
+  const handleStatusChange = (registrationId: string, newStatus: string) => {
+    if (newStatus === 'no_show') {
+      // Use the special no-show endpoint for blacklist functionality
+      markAsNoShowMutation.mutate(registrationId);
+    } else {
+      // Use regular status update for other statuses
+      updateRegistrationMutation.mutate({
+        id: registrationId,
+        registrationData: { status: newStatus }
+      });
+    }
   };
 
   return (
@@ -363,6 +398,7 @@ export default function AdminRegistrations() {
                           searchTerm={searchTerm}
                           statusFilter={statusFilter}
                           onMarkAsNoShow={handleMarkAsNoShow}
+                          onStatusChange={handleStatusChange}
                           setSelectedRegistration={setSelectedRegistration}
                           setDeleteDialogOpen={setDeleteDialogOpen}
                         />
