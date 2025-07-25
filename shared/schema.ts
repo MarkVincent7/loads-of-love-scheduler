@@ -4,7 +4,7 @@ import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
 // Enums
-export const registrationStatusEnum = pgEnum('registration_status', ['confirmed', 'waitlist', 'cancelled', 'no_show']);
+export const registrationStatusEnum = pgEnum('registration_status', ['confirmed', 'waitlist', 'cancelled', 'no-show']);
 
 // Events table
 export const events = pgTable("events", {

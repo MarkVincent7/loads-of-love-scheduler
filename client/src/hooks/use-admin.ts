@@ -155,6 +155,33 @@ export function useUpdateRegistration() {
   });
 }
 
+export function useMarkAsNoShow() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  
+  return useMutation({
+    mutationFn: async (registrationId: string) => {
+      const response = await apiRequest("POST", `/api/admin/registrations/${registrationId}/no-show`);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/registrations"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/events"] });
+      toast({
+        title: "Marked as No-Show",
+        description: "Registration marked as no-show and added to blacklist",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to mark as no-show",
+        variant: "destructive",
+      });
+    },
+  });
+}
+
 export function useCancelRegistration() {
   const queryClient = useQueryClient();
   const { toast } = useToast();

@@ -451,6 +451,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Mark registration as no-show and add to blacklist
+  app.post("/api/admin/registrations/:id/no-show", authMiddleware, async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      // Get the registration first
+      const registration = await storage.getRegistrationById(id);
+      if (!registration) {
+        return res.status(404).json({ message: "Registration not found" });
+      }
+      
+      // Update registration status to no-show
+      await storage.updateRegistration(id, { status: 'no_show' });
+      
+      // Add to blacklist
+      await storage.addToBlacklist({
+        name: registration.name,
+        email: registration.email,
+        phone: registration.phone,
+        reason: `No-show for event on ${new Date(registration.timeSlot.startTime).toLocaleDateString()}`
+      });
+      
+      res.json({ message: "Registration marked as no-show and added to blacklist" });
+    } catch (error) {
+      console.error("Error marking as no-show:", error);
+      res.status(500).json({ message: "Failed to mark as no-show" });
+    }
+  });
+
   // Delete registration (permanently remove)
   app.delete("/api/admin/registrations/:id", authMiddleware, async (req, res) => {
     try {

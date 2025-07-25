@@ -224,6 +224,27 @@ export class DatabaseStorage implements IStorage {
     return registration || undefined;
   }
 
+  async getRegistrationById(id: string): Promise<RegistrationWithDetails | undefined> {
+    const [result] = await db
+      .select({
+        registration: registrations,
+        event: events,
+        timeSlot: timeSlots
+      })
+      .from(registrations)
+      .innerJoin(events, eq(registrations.eventId, events.id))
+      .innerJoin(timeSlots, eq(registrations.timeSlotId, timeSlots.id))
+      .where(eq(registrations.id, id));
+    
+    if (!result) return undefined;
+    
+    return {
+      ...result.registration,
+      event: result.event,
+      timeSlot: result.timeSlot
+    };
+  }
+
   async updateRegistration(id: string, registration: Partial<InsertRegistration>): Promise<Registration> {
     const [updatedRegistration] = await db
       .update(registrations)
