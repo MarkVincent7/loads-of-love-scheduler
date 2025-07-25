@@ -1,5 +1,5 @@
 import { storage } from "../storage";
-import { sendReminderEmail } from "./mailersend";
+import { sendReminderEmail } from "./mailerlite";
 import type { RegistrationWithDetails } from "@shared/schema";
 
 // Run scheduler every hour

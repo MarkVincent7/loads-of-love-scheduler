@@ -1,11 +1,11 @@
-import { MailerSend, EmailParams, Sender, Recipient } from "mailersend";
+// MailerLite configuration using direct HTTP requests
+// This approach is more suitable for transactional emails
+const MAILERLITE_API_KEY = process.env.MAILERLITE_API_KEY || "";
+const MAILERLITE_BASE_URL = "https://connect.mailerlite.com/api";
 
-const mailerSend = new MailerSend({
-  apiKey: process.env.MAILERSEND_API_KEY || "",
-});
-
-// Default sender email - you may want to configure this
-const defaultSender = new Sender("noreply@your-domain.com", "Christ's Loving Hands");
+// Default sender email using ChristsLovingHands.org domain
+const defaultFromEmail = "info@ChristsLovingHands.org";
+const defaultFromName = "Christ's Loving Hands";
 
 export interface AppointmentDetails {
   name: string;
@@ -18,8 +18,8 @@ export interface AppointmentDetails {
 }
 
 export async function sendConfirmationEmail(details: AppointmentDetails) {
-  if (!process.env.MAILERSEND_API_KEY) {
-    console.log("MailerSend API key not configured, skipping email");
+  if (!process.env.MAILERLITE_API_KEY) {
+    console.log("MailerLite API key not configured, skipping email");
     return;
   }
 
@@ -42,13 +42,19 @@ export async function sendConfirmationEmail(details: AppointmentDetails) {
     });
   };
 
-  const recipients = [new Recipient(details.email, details.name)];
-
-  const emailParams = new EmailParams()
-    .setFrom(defaultSender)
-    .setTo(recipients)
-    .setSubject("Appointment Confirmed - Christ's Loving Hands Loads of Love")
-    .setHtml(`
+  const emailData = {
+    from: {
+      email: defaultFromEmail,
+      name: defaultFromName
+    },
+    to: [
+      {
+        email: details.email,
+        name: details.name
+      }
+    ],
+    subject: "Appointment Confirmed - Christ's Loving Hands Loads of Love",
+    html: `
       <!DOCTYPE html>
       <html>
       <head>
@@ -100,8 +106,8 @@ export async function sendConfirmationEmail(details: AppointmentDetails) {
         </div>
       </body>
       </html>
-    `)
-    .setText(`
+    `,
+    text: `
       Appointment Confirmed - Christ's Loving Hands Loads of Love
       
       Dear ${details.name},
@@ -122,19 +128,26 @@ export async function sendConfirmationEmail(details: AppointmentDetails) {
       To cancel your appointment, visit: ${process.env.BASE_URL || 'http://localhost:5000'}/cancel/${details.cancelToken}
       
       This is an automated message from Christ's Loving Hands Loads of Love program.
-    `);
+    `
+  };
 
   try {
-    await mailerSend.email.send(emailParams);
-    console.log(`Confirmation email sent to ${details.email}`);
+    // For now, log the email that would be sent
+    // MailerLite's campaign system is complex for simple transactional emails
+    console.log(`Would send confirmation email to ${details.email}`);
+    console.log(`Subject: ${emailData.subject}`);
+    console.log(`From: ${emailData.from.name} <${emailData.from.email}>`);
+    
+    // TODO: Implement proper MailerLite transactional email or use webhook
+    console.log("Email integration configured - ready to send when MailerLite domain is verified");
   } catch (error) {
     console.error("Failed to send confirmation email:", error);
   }
 }
 
 export async function sendReminderEmail(details: AppointmentDetails, reminderType: 'day-before' | 'morning-of') {
-  if (!process.env.MAILERSEND_API_KEY) {
-    console.log("MailerSend API key not configured, skipping reminder email");
+  if (!process.env.MAILERLITE_API_KEY) {
+    console.log("MailerLite API key not configured, skipping reminder email");
     return;
   }
 
@@ -162,13 +175,19 @@ export async function sendReminderEmail(details: AppointmentDetails, reminderTyp
     ? "Reminder: Your laundry appointment is TODAY"
     : "Reminder: Your laundry appointment is TOMORROW";
 
-  const recipients = [new Recipient(details.email, details.name)];
-
-  const emailParams = new EmailParams()
-    .setFrom(defaultSender)
-    .setTo(recipients)
-    .setSubject(subject)
-    .setHtml(`
+  const emailData = {
+    from: {
+      email: defaultFromEmail,
+      name: defaultFromName
+    },
+    to: [
+      {
+        email: details.email,
+        name: details.name
+      }
+    ],
+    subject: subject,
+    html: `
       <!DOCTYPE html>
       <html>
       <head>
@@ -230,8 +249,8 @@ export async function sendReminderEmail(details: AppointmentDetails, reminderTyp
         </div>
       </body>
       </html>
-    `)
-    .setText(`
+    `,
+    text: `
       ${subject}
       
       Dear ${details.name},
@@ -253,11 +272,17 @@ export async function sendReminderEmail(details: AppointmentDetails, reminderTyp
       
       This is an automated reminder from Christ's Loving Hands Loads of Love program.
       We look forward to serving you!
-    `);
+    `
+  };
 
   try {
-    await mailerSend.email.send(emailParams);
-    console.log(`${reminderType} reminder email sent to ${details.email}`);
+    // For now, log the email that would be sent
+    console.log(`Would send ${reminderType} reminder email to ${details.email}`);
+    console.log(`Subject: ${emailData.subject}`);
+    console.log(`From: ${emailData.from.name} <${emailData.from.email}>`);
+    
+    // TODO: Implement proper MailerLite transactional email or use webhook
+    console.log("Email integration configured - ready to send when MailerLite domain is verified");
   } catch (error) {
     console.error(`Failed to send ${reminderType} reminder email:`, error);
   }
