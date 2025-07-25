@@ -106,15 +106,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
             hour12: true
           });
           
-          await sendConfirmationEmail({
-            name: registration.name,
-            email: registration.email,
-            eventTitle: event.title,
-            eventDate: eventDate,
-            eventTime: `${startTime} - ${endTime}`,
-            eventLocation: event.location,
-            cancelUrl: `${process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS}` : 'http://localhost:5000'}/cancel/${registration.uniqueCancelToken}`
-          });
+          if (status === 'confirmed') {
+            await sendConfirmationEmail({
+              name: registration.name,
+              email: registration.email,
+              eventTitle: event.title,
+              eventDate: eventDate,
+              eventTime: `${startTime} - ${endTime}`,
+              eventLocation: event.location,
+              cancelUrl: `${process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS}` : 'http://localhost:5000'}/cancel/${registration.uniqueCancelToken}`
+            });
+          } else {
+            // Send waitlist confirmation email
+            const { sendWaitlistConfirmationEmail } = await import('./lib/sendgrid');
+            await sendWaitlistConfirmationEmail({
+              name: registration.name,
+              email: registration.email,
+              eventTitle: event.title,
+              eventDate: eventDate,
+              eventTime: `${startTime} - ${endTime}`,
+              eventLocation: event.location,
+              cancelUrl: `${process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS}` : 'http://localhost:5000'}/cancel/${registration.uniqueCancelToken}`
+            });
+          }
         }
         await sendConfirmationSMS(registration, targetSlot);
       } catch (emailError) {
@@ -155,9 +169,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Registration already cancelled" });
       }
       
+      const wasConfirmed = registration.status === 'confirmed';
       await storage.cancelRegistration(token);
       
-      // TODO: Promote waitlist if this was a confirmed registration
+      // Promote waitlist if this was a confirmed registration
+      if (wasConfirmed) {
+        await storage.promoteFromWaitlist(registration.eventId, registration.timeSlotId);
+      }
       
       res.json({ message: "Registration cancelled successfully" });
     } catch (error) {
@@ -463,7 +481,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Update registration status to no-show
-      await storage.updateRegistration(id, { status: 'no_show' });
+      await storage.updateRegistration(id, { status: 'no-show' });
       
       // Add to blacklist
       await storage.addToBlacklist({

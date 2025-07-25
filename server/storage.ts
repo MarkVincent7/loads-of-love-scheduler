@@ -247,7 +247,7 @@ export class DatabaseStorage implements IStorage {
     };
   }
 
-  async updateRegistration(id: string, registration: Partial<InsertRegistration>): Promise<Registration> {
+  async updateRegistration(id: string, registration: Partial<Registration>): Promise<Registration> {
     const [updatedRegistration] = await db
       .update(registrations)
       .set({
@@ -310,6 +310,7 @@ export class DatabaseStorage implements IStorage {
       .limit(1);
     
     if (waitlistRegistration) {
+      // Update status to confirmed
       await db
         .update(registrations)
         .set({
@@ -317,6 +318,53 @@ export class DatabaseStorage implements IStorage {
           updatedAt: new Date()
         })
         .where(eq(registrations.id, waitlistRegistration.id));
+      
+      // Send promotion notification email
+      try {
+        const event = await this.getEvent(eventId);
+        const timeSlot = await db
+          .select()
+          .from(timeSlots)
+          .where(eq(timeSlots.id, timeSlotId))
+          .limit(1);
+        
+        if (event && timeSlot[0]) {
+          const { sendWaitlistPromotionEmail } = await import('./lib/sendgrid');
+          
+          // Format date and time for email
+          const eventDate = new Date(timeSlot[0].startTime).toLocaleDateString('en-US', {
+            weekday: 'long',
+            year: 'numeric', 
+            month: 'long',
+            day: 'numeric'
+          });
+          
+          const startTime = new Date(timeSlot[0].startTime).toLocaleTimeString('en-US', {
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true
+          });
+          
+          const endTime = new Date(timeSlot[0].endTime).toLocaleTimeString('en-US', {
+            hour: 'numeric',
+            minute: '2-digit', 
+            hour12: true
+          });
+          
+          await sendWaitlistPromotionEmail({
+            name: waitlistRegistration.name,
+            email: waitlistRegistration.email,
+            eventTitle: event.title,
+            eventDate: eventDate,
+            eventTime: `${startTime} - ${endTime}`,
+            eventLocation: event.location,
+            cancelUrl: `${process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS}` : 'http://localhost:5000'}/cancel/${waitlistRegistration.uniqueCancelToken}`
+          });
+        }
+      } catch (emailError) {
+        console.error("Error sending waitlist promotion email:", emailError);
+        // Don't fail the promotion if email fails
+      }
     }
   }
 
@@ -462,7 +510,7 @@ export class DatabaseStorage implements IStorage {
     const [noShowResult] = await db
       .select({ 
         total: count(),
-        noShows: sql<number>`COUNT(CASE WHEN ${registrations.status} = 'no_show' THEN 1 END)`
+        noShows: sql<number>`COUNT(CASE WHEN ${registrations.status} = 'no-show' THEN 1 END)`
       })
       .from(registrations)
       .where(lte(sql`${registrations.createdAt}`, sql`NOW() - INTERVAL '1 week'`));

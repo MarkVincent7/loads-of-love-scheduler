@@ -43,26 +43,27 @@ export default function TimeSlotCard({ timeSlot, event }: TimeSlotCardProps) {
           {format(new Date(timeSlot.startTime), 'h:mm a')} - {format(new Date(timeSlot.endTime), 'h:mm a')}
         </div>
         
-        <div className={cn(
-          "inline-flex items-center px-3 py-1 rounded-full text-sm font-medium",
-          isFull ? "bg-red-100 text-red-600" : "bg-green-100 text-green-600"
-        )}>
-          <span className={cn(
-            "w-2 h-2 rounded-full mr-2",
-            isFull ? "bg-red-500" : "bg-green-500"
-          )}></span>
-          <span>
-            {isFull ? (
-              isWaitlistOnly ? "Join Waitlist" : "Full"
-            ) : (
-              `${availableSpots} spot${availableSpots !== 1 ? 's' : ''} left`
-            )}
-          </span>
-        </div>
+        {!isFull ? (
+          <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-600">
+            <span className="w-2 h-2 rounded-full bg-green-500 mr-2"></span>
+            <span>{availableSpots} spot{availableSpots !== 1 ? 's' : ''} left</span>
+          </div>
+        ) : (
+          <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-700 border border-yellow-300">
+            <span className="w-2 h-2 rounded-full bg-yellow-500 mr-2"></span>
+            <span>Join Waitlist</span>
+          </div>
+        )}
         
         <div className="mt-4 text-sm text-gray-500">
           {event.location}
         </div>
+        
+        {isFull && timeSlot.waitlistCount > 0 && (
+          <div className="mt-2 text-xs text-gray-400">
+            {timeSlot.waitlistCount} on waitlist
+          </div>
+        )}
       </div>
     </div>
   );

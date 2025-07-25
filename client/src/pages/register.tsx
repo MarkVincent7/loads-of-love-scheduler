@@ -107,7 +107,8 @@ export default function Register() {
         eventLocation: event?.location || '',
         startTime: timeSlot?.startTime || '',
         endTime: timeSlot?.endTime || '',
-        email: form.getValues('email')
+        email: form.getValues('email'),
+        status: data.status || 'confirmed'
       });
       
       setLocation(`/registration-success?${params.toString()}`);
