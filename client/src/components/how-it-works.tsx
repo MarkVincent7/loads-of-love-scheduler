@@ -22,7 +22,7 @@ export default function HowItWorks() {
             <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <span className="text-2xl font-bold text-primary-600">3</span>
             </div>
-            <h4 className="text-lg font-semibold text-gray-900 mb-2">Come & Enjoy</h4>
+            <h4 className="text-lg font-semibold text-gray-900 mb-2">Clean & Fresh</h4>
             <p className="text-gray-600">Arrive at your scheduled time with your laundry - it's completely free!</p>
           </div>
         </div>
