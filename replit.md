@@ -56,6 +56,9 @@ Preferred communication style: Simple, everyday language.
 - All admin actions (status changes, deletions, no-show markings) now trigger notifications to administrators
 - Email notifications include complete event and registrant details with professional styling
 - Admin notifications use SendGrid with info@ChristsLovingHands.org as sender address
+- Added calendar integration to confirmation emails with "Add to Calendar" buttons
+- Calendar buttons support Google Calendar, Outlook, and Yahoo Calendar with proper event details
+- Calendar events include event title, date, time, location, and detailed description for easy scheduling
 
 **July 24, 2025**
 - Fixed registration display issue in admin dashboard
