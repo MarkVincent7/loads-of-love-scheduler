@@ -142,8 +142,7 @@ export async function sendConfirmationEmail(details: {
             
             <div class="footer">
               <p>Thank you for letting us serve you!</p>
-              <p>Christ's Loving Hands<br>
-              <em>Showing God's love through practical service</em></p>
+              <p>Christ's Loving Hands</p>
               <p>This is an automated message from Christ's Loving Hands Loads of Love program.</p>
             </div>
           </div>
@@ -175,7 +174,6 @@ export async function sendConfirmationEmail(details: {
 
       Thank you for letting us serve you!
       Christ's Loving Hands
-      Showing God's love through practical service
 
       This is an automated message from Christ's Loving Hands Loads of Love program.
     `
@@ -302,8 +300,7 @@ export async function sendReminderEmail(
             
             <div class="footer">
               <p>We look forward to serving you!</p>
-              <p>Christ's Loving Hands<br>
-              <em>Showing God's love through practical service</em></p>
+              <p>Christ's Loving Hands</p>
             </div>
           </div>
         </div>
