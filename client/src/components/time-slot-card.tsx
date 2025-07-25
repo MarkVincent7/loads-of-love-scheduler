@@ -80,7 +80,18 @@ export default function TimeSlotCard({ timeSlot, event }: TimeSlotCardProps) {
         <div className="text-left">
           <div className="text-xs font-medium text-gray-500 uppercase tracking-wide">Event Location</div>
           <div className="text-sm text-gray-700 font-medium">
-            {event.location}
+            {event.laundromatName && (
+              <div className="font-semibold">{event.laundromatName}</div>
+            )}
+            {event.laundromatAddress && (
+              <div className="text-xs text-gray-600 mt-1">{event.laundromatAddress}</div>
+            )}
+            {!event.laundromatName && !event.laundromatAddress && (
+              <div>{event.location}</div>
+            )}
+            {(event.laundromatName || event.laundromatAddress) && event.location && (
+              <div className="text-xs text-gray-500 mt-1">{event.location}</div>
+            )}
           </div>
         </div>
         

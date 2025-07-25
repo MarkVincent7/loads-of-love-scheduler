@@ -15,6 +15,7 @@ export default function RegistrationSuccess() {
   const startTime = urlParams.get('startTime');
   const endTime = urlParams.get('endTime');
   const userEmail = urlParams.get('email');
+  const status = urlParams.get('status') || 'confirmed';
 
   // Redirect to home if no registration details
   useEffect(() => {
@@ -38,20 +39,25 @@ export default function RegistrationSuccess() {
           <CardContent className="p-8 text-center">
             {/* Success Icon */}
             <div className="mb-6">
-              <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <CheckCircle className="w-12 h-12 text-green-600" />
+              <div className={`w-20 h-20 ${status === 'waitlist' ? 'bg-yellow-100' : 'bg-green-100'} rounded-full flex items-center justify-center mx-auto mb-4`}>
+                <CheckCircle className={`w-12 h-12 ${status === 'waitlist' ? 'text-yellow-600' : 'text-green-600'}`} />
               </div>
               <h1 className="text-2xl font-bold text-gray-900 mb-2">
-                Registration Complete!
+                {status === 'waitlist' ? 'Added to Waitlist!' : 'Registration Complete!'}
               </h1>
               <p className="text-gray-600">
-                You're all set for your laundry appointment
+                {status === 'waitlist' 
+                  ? "You're on the waitlist and we'll notify you if a spot opens up"
+                  : "You're all set for your laundry appointment"
+                }
               </p>
             </div>
 
             {/* Appointment Details */}
-            <div className="bg-blue-50 p-4 rounded-lg mb-6 text-left">
-              <h2 className="font-semibold text-gray-900 mb-3">Your Appointment Details</h2>
+            <div className={`${status === 'waitlist' ? 'bg-yellow-50' : 'bg-blue-50'} p-4 rounded-lg mb-6 text-left`}>
+              <h2 className="font-semibold text-gray-900 mb-3">
+                {status === 'waitlist' ? 'Waitlist Details' : 'Your Appointment Details'}
+              </h2>
               
               <div className="space-y-3">
                 <div className="flex items-center text-sm">

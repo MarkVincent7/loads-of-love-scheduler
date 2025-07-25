@@ -16,6 +16,8 @@ const eventSchema = z.object({
   description: z.string().optional(),
   date: z.string().min(1, "Date is required"),
   location: z.string().min(1, "Location is required"),
+  laundromatName: z.string().optional(),
+  laundromatAddress: z.string().optional(),
   timeSlots: z.array(z.object({
     startTime: z.string().min(1, "Start time is required"),
     endTime: z.string().min(1, "End time is required"),
@@ -40,6 +42,8 @@ export default function CreateEventDialog({ children }: CreateEventDialogProps) 
       description: "",
       date: "",
       location: "",
+      laundromatName: "",
+      laundromatAddress: "",
       timeSlots: [
         { startTime: "", endTime: "", capacity: 10 }
       ],
@@ -87,6 +91,8 @@ export default function CreateEventDialog({ children }: CreateEventDialogProps) 
       description: data.description || "",
       date: eventDate.toISOString().split('T')[0] + 'T00:00:00.000Z', // Ensure proper date format
       location: data.location,
+      laundromatName: data.laundromatName || "",
+      laundromatAddress: data.laundromatAddress || "",
       timeSlots: formattedTimeSlots,
     }, {
       onSuccess: () => {
@@ -124,14 +130,40 @@ export default function CreateEventDialog({ children }: CreateEventDialogProps) 
             </div>
             
             <div>
-              <Label htmlFor="location">Location *</Label>
+              <Label htmlFor="location">General Location *</Label>
               <Input
                 id="location"
                 {...form.register("location")}
-                placeholder="123 Main St, City, State"
+                placeholder="Downtown Cincinnati, OH"
               />
               {form.formState.errors.location && (
                 <p className="text-sm text-red-600 mt-1">{form.formState.errors.location.message}</p>
+              )}
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="laundromatName">Laundromat Name</Label>
+              <Input
+                id="laundromatName"
+                {...form.register("laundromatName")}
+                placeholder="Sparkling Clean Laundromat"
+              />
+              {form.formState.errors.laundromatName && (
+                <p className="text-sm text-red-600 mt-1">{form.formState.errors.laundromatName.message}</p>
+              )}
+            </div>
+            
+            <div>
+              <Label htmlFor="laundromatAddress">Laundromat Address</Label>
+              <Input
+                id="laundromatAddress"
+                {...form.register("laundromatAddress")}
+                placeholder="123 Main Street, Cincinnati, OH 45202"
+              />
+              {form.formState.errors.laundromatAddress && (
+                <p className="text-sm text-red-600 mt-1">{form.formState.errors.laundromatAddress.message}</p>
               )}
             </div>
           </div>

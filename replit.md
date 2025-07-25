@@ -34,6 +34,10 @@ Preferred communication style: Simple, everyday language.
 - Created waitlist confirmation and promotion emails with professional styling
 - Redesigned time slot cards with improved date/time formatting and clear action buttons
 - Enhanced visual hierarchy with structured event information display (Event Date, Event Time, Slots Left, Event Location)
+- Added laundromat name and address fields to event creation form in admin dashboard
+- Updated time slot cards to display detailed laundromat information (name, address) when available
+- Enhanced registration success page to properly handle waitlist vs confirmed status with color-coded indicators
+- Updated database schema with laundromat_name and laundromat_address columns for detailed location information
 
 **July 24, 2025**
 - Fixed registration display issue in admin dashboard

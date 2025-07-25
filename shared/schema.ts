@@ -13,6 +13,8 @@ export const events = pgTable("events", {
   description: text("description"),
   date: timestamp("date").notNull(),
   location: text("location").notNull(),
+  laundromatName: text("laundromat_name"),
+  laundromatAddress: text("laundromat_address"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });

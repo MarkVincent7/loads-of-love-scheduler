@@ -362,7 +362,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         title: originalEvent.title,
         description: originalEvent.description,
         date: new Date(date),
-        location: originalEvent.location
+        location: originalEvent.location,
+        laundromatName: originalEvent.laundromatName,
+        laundromatAddress: originalEvent.laundromatAddress
       });
       
       // Clone time slots
