@@ -4,6 +4,7 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useLocation } from "wouter";
 import WaitlistForm from "./waitlist-form";
+import { formatEmailDate, formatEmailTime } from "@shared/timezone";
 
 interface TimeSlotCardProps {
   timeSlot: TimeSlot & { registrationCount: number; waitlistCount: number };
@@ -41,7 +42,7 @@ export default function TimeSlotCard({ timeSlot, event }: TimeSlotCardProps) {
             "text-lg font-semibold",
             isFull ? "text-gray-600" : "text-gray-900"
           )}>
-            {format(new Date(timeSlot.startTime), 'EEEE, MMMM d, yyyy')}
+            {formatEmailDate(timeSlot.startTime)}
           </div>
         </div>
         
@@ -52,7 +53,7 @@ export default function TimeSlotCard({ timeSlot, event }: TimeSlotCardProps) {
             "text-xl font-bold",
             isFull ? "text-gray-600" : "text-primary"
           )}>
-            {format(new Date(timeSlot.startTime), 'h:mm a')} - {format(new Date(timeSlot.endTime), 'h:mm a')}
+            {formatEmailTime(timeSlot.startTime)} - {formatEmailTime(timeSlot.endTime)}
           </div>
         </div>
         

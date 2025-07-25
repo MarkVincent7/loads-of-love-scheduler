@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Plus, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { createEasternDate } from "@shared/timezone";
 
 const eventSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -65,17 +66,16 @@ export default function CreateEventDialog({ children }: CreateEventDialogProps) 
   };
 
   const onSubmit = (data: EventFormData) => {
-    // Parse date as local date without timezone conversion
-    const [year, month, day] = data.date.split('-').map(Number);
-    const eventDate = new Date(year, month - 1, day); // month is 0-indexed
+    // Create date in Eastern Time
+    const eventDate = createEasternDate(data.date);
     
     const formattedTimeSlots = data.timeSlots.map(slot => {
       const [startHour, startMinute] = slot.startTime.split(':');
       const [endHour, endMinute] = slot.endTime.split(':');
       
-      // Create datetime objects using the same date
-      const startTime = new Date(year, month - 1, day, parseInt(startHour), parseInt(startMinute));
-      const endTime = new Date(year, month - 1, day, parseInt(endHour), parseInt(endMinute));
+      // Create datetime objects in Eastern Time
+      const startTime = createEasternDate(data.date, parseInt(startHour), parseInt(startMinute));
+      const endTime = createEasternDate(data.date, parseInt(endHour), parseInt(endMinute));
       
       return {
         startTime: startTime.toISOString(),

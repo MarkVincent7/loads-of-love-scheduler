@@ -86,25 +86,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Get event details for email
         const event = await storage.getEvent(validatedData.eventId);
         if (event) {
-          // Format date and time for email
-          const eventDate = new Date(targetSlot.startTime).toLocaleDateString('en-US', {
-            weekday: 'long',
-            year: 'numeric', 
-            month: 'long',
-            day: 'numeric'
-          });
+          // Import timezone utilities and format date/time for email in Eastern Time
+          const { formatEmailDate, formatEmailTime } = await import('../shared/timezone');
           
-          const startTime = new Date(targetSlot.startTime).toLocaleTimeString('en-US', {
-            hour: 'numeric',
-            minute: '2-digit',
-            hour12: true
-          });
-          
-          const endTime = new Date(targetSlot.endTime).toLocaleTimeString('en-US', {
-            hour: 'numeric',
-            minute: '2-digit', 
-            hour12: true
-          });
+          const eventDate = formatEmailDate(targetSlot.startTime);
+          const startTime = formatEmailTime(targetSlot.startTime);
+          const endTime = formatEmailTime(targetSlot.endTime);
           
           if (status === 'confirmed') {
             await sendConfirmationEmail({
