@@ -61,17 +61,18 @@ export default function CreateEventDialog({ children }: CreateEventDialogProps) 
   };
 
   const onSubmit = (data: EventFormData) => {
-    // Convert date and times to proper DateTime objects
-    const eventDate = new Date(data.date); // Use local date parsing
+    // Convert date and times to proper DateTime objects - ensure we use the event date correctly
+    const eventDate = new Date(data.date + 'T00:00:00'); // Parse as local date
     
     const formattedTimeSlots = data.timeSlots.map(slot => {
       const [startHour, startMinute] = slot.startTime.split(':');
       const [endHour, endMinute] = slot.endTime.split(':');
       
-      const startTime = new Date(eventDate);
+      // Create new Date objects for the specific event date
+      const startTime = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
       startTime.setHours(parseInt(startHour), parseInt(startMinute), 0, 0);
       
-      const endTime = new Date(eventDate);
+      const endTime = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
       endTime.setHours(parseInt(endHour), parseInt(endMinute), 0, 0);
       
       return {
@@ -84,7 +85,7 @@ export default function CreateEventDialog({ children }: CreateEventDialogProps) 
     createEventMutation.mutate({
       title: data.title,
       description: data.description || "",
-      date: eventDate.toISOString(),
+      date: eventDate.toISOString().split('T')[0] + 'T00:00:00.000Z', // Ensure proper date format
       location: data.location,
       timeSlots: formattedTimeSlots,
     }, {
