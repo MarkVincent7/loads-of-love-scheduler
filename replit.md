@@ -25,6 +25,10 @@ Preferred communication style: Simple, everyday language.
 - Implemented no-show tracking system with automatic blacklist functionality
 - Enhanced backend storage methods for no-show processing and blacklist operations
 - Updated registration status enum to include 'no_show' status for attendance tracking
+- Replaced static status badges with interactive dropdown menus for quick status changes
+- Fixed blacklist display routing and authentication issues
+- Added remove functionality to blacklist management with proper API integration
+- Fixed event creation display issue by adjusting date filtering in getActiveEvents method
 
 **July 24, 2025**
 - Fixed registration display issue in admin dashboard

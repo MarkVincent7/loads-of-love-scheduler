@@ -70,7 +70,9 @@ export interface IStorage {
 
 export class DatabaseStorage implements IStorage {
   async getActiveEvents(): Promise<EventWithSlots[]> {
-    const now = new Date();
+    // Get today's date at midnight for comparison
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
     
     const eventsWithSlots = await db
       .select({
@@ -79,12 +81,12 @@ export class DatabaseStorage implements IStorage {
         registrationCount: count(registrations.id),
       })
       .from(events)
-      .leftJoin(timeSlots, eq(events.id, timeSlots.eventId))
+      .innerJoin(timeSlots, eq(events.id, timeSlots.eventId))
       .leftJoin(registrations, and(
         eq(timeSlots.id, registrations.timeSlotId),
         eq(registrations.status, 'confirmed')
       ))
-      .where(gte(events.date, now))
+      .where(gte(events.date, today))
       .groupBy(events.id, timeSlots.id)
       .orderBy(asc(events.date), asc(timeSlots.startTime));
 
