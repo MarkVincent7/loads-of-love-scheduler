@@ -28,9 +28,7 @@ export default function Home() {
       <section className="bg-white py-12 lg:py-16">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">Loads of Love  Sign Up</h2>
-          <p className="text-lg text-gray-600 mb-8">
-            Choose your preferred time slot and complete your reservation below.
-          </p>
+          <p className="text-lg text-gray-600 mb-8">Loads of Love is a free laundry event providing 3 free loads of laundry for 10 families in our service area. every month.  Choose your preferred time slot and complete your reservation below.</p>
           
           {isLoading ? (
             <div className="mb-12">
