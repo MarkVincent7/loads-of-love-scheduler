@@ -100,8 +100,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
               eventTitle: event.title,
               eventDate: eventDate,
               eventTime: `${startTime} - ${endTime}`,
-              eventLocation: event.location,
-              cancelUrl: `${process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS}` : 'http://localhost:5000'}/cancel/${registration.uniqueCancelToken}`
+              eventLocation: event.laundromatName ? 
+                `${event.laundromatName}${event.laundromatAddress ? ', ' + event.laundromatAddress : ''}` : 
+                event.location,
+              cancelUrl: `${process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS}` : 'http://localhost:5000'}/cancel/${registration.uniqueCancelToken}`,
+              startTime: targetSlot.startTime,
+              endTime: targetSlot.endTime
             });
             
             // Send admin notification for new confirmed registration
@@ -220,7 +224,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
             eventLocation: event.laundromatName ? 
               `${event.laundromatName}${event.laundromatAddress ? ', ' + event.laundromatAddress : ''}` : 
               event.location,
-            cancelUrl: `${process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS}` : 'http://localhost:5000'}/cancel/${registration.uniqueCancelToken}`
+            cancelUrl: `${process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS}` : 'http://localhost:5000'}/cancel/${registration.uniqueCancelToken}`,
+            startTime: targetSlot.startTime,
+            endTime: targetSlot.endTime
           });
           
           // Send admin notification for waitlist addition

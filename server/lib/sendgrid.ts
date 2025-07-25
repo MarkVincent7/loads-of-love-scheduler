@@ -45,7 +45,22 @@ export async function sendConfirmationEmail(details: {
   eventTime: string;
   eventLocation: string;
   cancelUrl: string;
+  startTime?: Date;
+  endTime?: Date;
 }) {
+  // Generate calendar buttons if start/end times are provided
+  let calendarButtonsHTML = '';
+  if (details.startTime && details.endTime) {
+    const { generateCalendarButtonsHTML } = await import('./calendar-utils');
+    calendarButtonsHTML = generateCalendarButtonsHTML({
+      title: details.eventTitle,
+      startTime: details.startTime,
+      endTime: details.endTime,
+      location: details.eventLocation,
+      description: `Confirmed appointment for ${details.eventTitle}\n\nDate: ${details.eventDate}\nTime: ${details.eventTime}\nLocation: ${details.eventLocation}`
+    });
+  }
+
   const emailData = {
     to: details.email,
     subject: "Appointment Confirmed - Christ's Loving Hands Loads of Love",
@@ -136,6 +151,8 @@ export async function sendConfirmationEmail(details: {
               <li>Service is completely free - no payment required</li>
               <li>We'll have volunteers to help with washing and folding</li>
             </ul>
+            
+            ${calendarButtonsHTML}
             
             <p>If you need to cancel your appointment, please use the link below:</p>
             <a href="${details.cancelUrl}" class="cancel-link">Cancel Appointment</a>
@@ -536,7 +553,22 @@ export async function sendWaitlistConfirmationEmail(details: {
   eventTime: string;
   eventLocation: string;
   cancelUrl: string;
+  startTime?: Date;
+  endTime?: Date;
 }) {
+  // Generate calendar buttons if start/end times are provided
+  let calendarButtonsHTML = '';
+  if (details.startTime && details.endTime) {
+    const { generateCalendarButtonsHTML } = await import('./calendar-utils');
+    calendarButtonsHTML = generateCalendarButtonsHTML({
+      title: `${details.eventTitle} (Waitlist)`,
+      startTime: details.startTime,
+      endTime: details.endTime,
+      location: details.eventLocation,
+      description: `Waitlist reservation for ${details.eventTitle}\n\nDate: ${details.eventDate}\nTime: ${details.eventTime}\nLocation: ${details.eventLocation}\n\nNote: You are currently on the waitlist. You will be notified if a slot becomes available.`
+    });
+  }
+
   const emailData = {
     to: details.email,
     subject: "Waitlist Confirmation - Christ's Loving Hands Loads of Love",
@@ -637,6 +669,8 @@ export async function sendWaitlistConfirmationEmail(details: {
               <li>Be ready to respond quickly if a spot opens up</li>
               <li>Keep this confirmation for your records</li>
             </ul>
+            
+            ${calendarButtonsHTML}
             
             <p>If you need to leave the waitlist, please use the link below:</p>
             <a href="${details.cancelUrl}" class="cancel-link">Leave Waitlist</a>
