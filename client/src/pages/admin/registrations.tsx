@@ -10,6 +10,7 @@ import { useRegistrations, useMarkAsNoShow, useUpdateRegistration } from "@/hook
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -246,6 +247,18 @@ export default function AdminRegistrations() {
 
   // Sort events by date (ascending)
   const sortedEvents = events.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  
+  // Separate upcoming and past events
+  const now = new Date();
+  const upcomingEvents = sortedEvents.filter(event => {
+    // Check if any time slot is still in the future
+    return event.timeSlots.some(slot => new Date(slot.endTime) > now);
+  });
+  
+  const pastEvents = sortedEvents.filter(event => {
+    // All time slots have ended
+    return event.timeSlots.every(slot => new Date(slot.endTime) <= now);
+  });
 
   // Filter registrations based on search and status
   const filteredRegistrations = Array.isArray(typedRegistrations) ? typedRegistrations.filter((registration: any) => {
@@ -336,7 +349,7 @@ export default function AdminRegistrations() {
           </CardContent>
         </Card>
 
-        {/* Events by Date */}
+        {/* Events by Date with Tabs */}
         {eventsLoading ? (
           <div className="grid gap-4">
             {[1, 2, 3].map((i) => (
@@ -360,8 +373,28 @@ export default function AdminRegistrations() {
             </CardContent>
           </Card>
         ) : (
-          <div className="space-y-4">
-            {sortedEvents.map((event) => {
+          <Tabs defaultValue="upcoming" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="upcoming">
+                Upcoming Events ({upcomingEvents.length})
+              </TabsTrigger>
+              <TabsTrigger value="past">
+                Past Events ({pastEvents.length})
+              </TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="upcoming" className="mt-6">
+              {upcomingEvents.length === 0 ? (
+                <Card>
+                  <CardContent className="text-center py-8">
+                    <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-500 mb-2">No upcoming events</p>
+                    <p className="text-sm text-gray-400">All events have concluded</p>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="space-y-4">
+                  {upcomingEvents.map((event) => {
               const isExpanded = expandedEvents.has(event.id);
               const eventRegistrations = event.timeSlots.reduce((total, slot) => total + slot.registrationCount, 0);
               const totalCapacity = event.timeSlots.reduce((total, slot) => total + slot.capacity, 0);
@@ -419,9 +452,98 @@ export default function AdminRegistrations() {
                   </CardContent>
                 </Card>
               );
-            })}
-          </div>
-        )}
+                    })}
+                  </div>
+                )}
+              </TabsContent>
+
+              <TabsContent value="past" className="mt-6">
+                {pastEvents.length === 0 ? (
+                  <Card>
+                    <CardContent className="text-center py-8">
+                      <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                      <p className="text-gray-500 mb-2">No past events</p>
+                      <p className="text-sm text-gray-400">Events will appear here after they conclude</p>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <div className="space-y-4">
+                    {pastEvents.map((event) => {
+                      const isExpanded = expandedEvents.has(event.id);
+                      const eventRegistrations = event.timeSlots.reduce((total, slot) => total + slot.registrationCount, 0);
+                      const totalCapacity = event.timeSlots.reduce((total, slot) => total + slot.capacity, 0);
+                      
+                      return (
+                        <Card key={event.id}>
+                          <CardContent className="p-0">
+                            {/* Event Header */}
+                            <div 
+                              className="p-4 cursor-pointer hover:bg-gray-50 transition-colors"
+                              onClick={() => toggleEventExpansion(event.id)}
+                            >
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center space-x-4">
+                                  <div className="flex-shrink-0">
+                                    {isExpanded ? (
+                                      <ChevronDown className="w-5 h-5 text-gray-500" />
+                                    ) : (
+                                      <ChevronRight className="w-5 h-5 text-gray-500" />
+                                    )}
+                                  </div>
+                                  <div>
+                                    <h3 className="font-semibold text-gray-900">{event.title}</h3>
+                                    <div className="flex items-center space-x-4 mt-1">
+                                      <span className="text-sm text-gray-600 flex items-center">
+                                        <Calendar className="w-4 h-4 mr-1" />
+                                        {format(new Date(event.date), 'EEE, MMM d')}
+                                      </span>
+                                      <span className="text-sm text-gray-600 flex items-center">
+                                        <Clock className="w-4 h-4 mr-1" />
+                                        {event.timeSlots.length} time slot{event.timeSlots.length !== 1 ? 's' : ''}
+                                      </span>
+                                      <span className="text-sm text-gray-600 flex items-center">
+                                        <Users className="w-4 h-4 mr-1" />
+                                        {eventRegistrations} registered
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="flex items-center space-x-4">
+                                  <div className="text-right">
+                                    <p className="font-medium text-gray-900">
+                                      {format(new Date(event.date), 'EEEE, MMMM d, yyyy')}
+                                    </p>
+                                    <p className="text-sm text-gray-600">
+                                      {eventRegistrations} / {totalCapacity} registered
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Registrations Table */}
+                            {isExpanded && (
+                              <div className="border-t bg-gray-50/50">
+                                <EventRegistrationsTable 
+                                  eventId={event.id}
+                                  searchTerm={searchTerm}
+                                  statusFilter={statusFilter}
+                                  onMarkAsNoShow={handleMarkAsNoShow}
+                                  onStatusChange={handleStatusChange}
+                                  setSelectedRegistration={setSelectedRegistration}
+                                  setDeleteDialogOpen={setDeleteDialogOpen}
+                                />
+                              </div>
+                            )}
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                )}
+              </TabsContent>
+            </Tabs>
+          )}
       </div>
 
       <DeleteRegistrationDialog
