@@ -145,9 +145,9 @@ export async function sendConfirmationEmail(details: {
             
             <p><strong>What you get:</strong></p>
             <ul>
-              <li><strong>3 loads of laundry for free</strong> - washing, drying, and folding included</li>
+              <li><strong>3 loads of laundry for free</strong> - washing and drying included</li>
               <li>Free detergent and fabric softener provided</li>
-              <li>Volunteer assistance with washing and folding</li>
+              <li>Volunteer assistance with washing</li>
             </ul>
             
             <p><strong>What to bring:</strong></p>
@@ -160,7 +160,7 @@ export async function sendConfirmationEmail(details: {
             <ul>
               <li>Please arrive on time to ensure your slot</li>
               <li>Service is completely free - no payment required</li>
-              <li>We'll have volunteers to help with washing and folding</li>
+              <li>We'll have volunteers to help with washing</li>
             </ul>
             
             ${calendarButtonsHTML}
@@ -190,9 +190,9 @@ export async function sendConfirmationEmail(details: {
       Location: ${details.eventLocation}
 
       What you get:
-      - 3 loads of laundry for free - washing, drying, and folding included
+      - 3 loads of laundry for free - washing and drying included
       - Free detergent and fabric softener provided
-      - Volunteer assistance with washing and folding
+      - Volunteer assistance with washing
 
       What to bring:
       - Your laundry (up to 3 loads)
@@ -201,7 +201,7 @@ export async function sendConfirmationEmail(details: {
       Important notes:
       - Please arrive on time to ensure your slot
       - Service is completely free - no payment required
-      - We'll have volunteers to help with washing and folding
+      - We'll have volunteers to help with washing
 
       If you need to cancel your appointment, please visit: ${details.cancelUrl}
 
@@ -685,9 +685,9 @@ export async function sendWaitlistConfirmationEmail(details: {
             
             <p><strong>What you'll get when confirmed:</strong></p>
             <ul>
-              <li><strong>3 loads of laundry for free</strong> - washing, drying, and folding included</li>
+              <li><strong>3 loads of laundry for free</strong> - washing and drying included</li>
               <li>Free detergent and fabric softener provided</li>
-              <li>Volunteer assistance with washing and folding</li>
+              <li>Volunteer assistance with washing</li>
             </ul>
             
             <p><strong>What to prepare:</strong></p>
@@ -729,9 +729,9 @@ export async function sendWaitlistConfirmationEmail(details: {
       - We'll send you notification as soon as a spot becomes available
 
       What you'll get when confirmed:
-      - 3 loads of laundry for free - washing, drying, and folding included
+      - 3 loads of laundry for free - washing and drying included
       - Free detergent and fabric softener provided
-      - Volunteer assistance with washing and folding
+      - Volunteer assistance with washing
 
       What to prepare:
       - Have your laundry ready (up to 3 loads)
