@@ -23,7 +23,7 @@ export default function HowItWorks() {
               <span className="text-2xl font-bold text-primary-600">3</span>
             </div>
             <h4 className="text-lg font-semibold text-gray-900 mb-2">Clean & Fresh</h4>
-            <p className="text-gray-600">Arrive at your scheduled time with your laundry - it's completely free!</p>
+            <p className="text-gray-600">Wash and dry your clothes while connecting with community. Leave with clean laundry and a smile!</p>
           </div>
         </div>
       </div>

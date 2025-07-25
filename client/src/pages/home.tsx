@@ -24,13 +24,10 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      
       {/* Hero Section */}
       <section className="bg-white py-12 lg:py-16">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
-            Reserve Your Spot
-          </h2>
+          <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">Loads of Love  Sign Up</h2>
           <p className="text-lg text-gray-600 mb-8">
             Choose your preferred time slot and complete your reservation below.
           </p>
@@ -67,9 +64,7 @@ export default function Home() {
           )}
         </div>
       </section>
-      
       <HowItWorks />
-      
       {/* Footer */}
       <footer className="bg-white border-t border-gray-200 py-8">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
