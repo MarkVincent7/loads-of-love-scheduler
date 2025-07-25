@@ -6,7 +6,7 @@ import { insertRegistrationSchema, insertEventSchema, insertTimeSlotSchema, inse
 import { authMiddleware } from "./middleware/auth";
 import { generateAuthToken, verifyPassword, hashPassword } from "./lib/auth";
 import { checkBlacklistMiddleware } from "./lib/blacklist";
-import { sendConfirmationEmail } from "./lib/mailerlite";
+import { sendConfirmationEmail, sendReminderEmail } from "./lib/sendgrid";
 import { sendConfirmationSMS, sendReminderSMS } from "./lib/sms";
 
 export async function registerRoutes(app: Express): Promise<Server> {
