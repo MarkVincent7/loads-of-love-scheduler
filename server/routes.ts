@@ -103,6 +103,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
               eventLocation: event.location,
               cancelUrl: `${process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS}` : 'http://localhost:5000'}/cancel/${registration.uniqueCancelToken}`
             });
+            
+            // Send admin notification for new confirmed registration
+            const { sendNewRegistrationNotification } = await import('./lib/admin-notifications');
+            await sendNewRegistrationNotification({
+              registration,
+              event,
+              timeSlot: targetSlot
+            });
           } else {
             // Send waitlist confirmation email
             const { sendWaitlistConfirmationEmail } = await import('./lib/sendgrid');
@@ -114,6 +122,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
               eventTime: `${startTime} - ${endTime}`,
               eventLocation: event.location,
               cancelUrl: `${process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS}` : 'http://localhost:5000'}/cancel/${registration.uniqueCancelToken}`
+            });
+            
+            // Send admin notification for waitlist addition
+            const { sendWaitlistNotification } = await import('./lib/admin-notifications');
+            await sendWaitlistNotification({
+              registration,
+              event,
+              timeSlot: targetSlot
             });
           }
         }
@@ -207,6 +223,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
             cancelUrl: `${process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS}` : 'http://localhost:5000'}/cancel/${registration.uniqueCancelToken}`
           });
           
+          // Send admin notification for waitlist addition
+          const { sendWaitlistNotification } = await import('./lib/admin-notifications');
+          await sendWaitlistNotification({
+            registration,
+            event,
+            timeSlot: targetSlot
+          });
+          
           console.log(`✓ Waitlist confirmation email sent to ${validatedData.email}`);
         }
       } catch (emailError) {
@@ -243,6 +267,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const wasConfirmed = registration.status === 'confirmed';
       await storage.cancelRegistration(token);
+      
+      // Send admin notification for cancellation
+      try {
+        const event = await storage.getEvent(registration.eventId);
+        const timeSlots = await storage.getTimeSlotsByEvent(registration.eventId);
+        const timeSlot = timeSlots.find(slot => slot.id === registration.timeSlotId);
+        
+        if (event && timeSlot) {
+          const { sendCancellationNotification } = await import('./lib/admin-notifications');
+          await sendCancellationNotification({
+            registration,
+            event,
+            timeSlot
+          });
+        }
+      } catch (notificationError) {
+        console.error("Error sending cancellation notification:", notificationError);
+      }
       
       // Notify waitlist if this was a confirmed registration
       if (wasConfirmed) {
@@ -574,6 +616,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const wasConfirmed = registration.status === 'confirmed';
       await storage.updateRegistrationStatus(id, 'cancelled');
       
+      // Send admin notification for cancellation
+      try {
+        const event = await storage.getEvent(registration.eventId);
+        const timeSlots = await storage.getTimeSlotsByEvent(registration.eventId);
+        const timeSlot = timeSlots.find(slot => slot.id === registration.timeSlotId);
+        
+        if (event && timeSlot) {
+          const { sendCancellationNotification } = await import('./lib/admin-notifications');
+          await sendCancellationNotification({
+            registration,
+            event,
+            timeSlot
+          });
+        }
+      } catch (notificationError) {
+        console.error("Error sending admin cancellation notification:", notificationError);
+      }
+      
       // Notify waitlist if this was a confirmed registration
       if (wasConfirmed) {
         try {
@@ -647,6 +707,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const wasConfirmed = registration.status === 'confirmed';
       await storage.deleteRegistration(id);
+      
+      // Send admin notification for deletion
+      try {
+        const event = await storage.getEvent(registration.eventId);
+        const timeSlots = await storage.getTimeSlotsByEvent(registration.eventId);
+        const timeSlot = timeSlots.find(slot => slot.id === registration.timeSlotId);
+        
+        if (event && timeSlot) {
+          const { sendCancellationNotification } = await import('./lib/admin-notifications');
+          await sendCancellationNotification({
+            registration: { ...registration, status: 'cancelled' }, // Show as cancelled in email
+            event,
+            timeSlot
+          });
+        }
+      } catch (notificationError) {
+        console.error("Error sending admin deletion notification:", notificationError);
+      }
       
       // Notify waitlist if this was a confirmed registration
       if (wasConfirmed) {

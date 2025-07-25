@@ -51,6 +51,11 @@ Preferred communication style: Simple, everyday language.
 - Updated event creation, editing, and cloning to use consistent local date parsing without UTC conversion
 - Resolved discrepancy between admin dashboard date input (07/29/25) and public display (Monday 07/28)
 - Implemented proper date handling across frontend forms and backend processing for accurate date display
+- Added comprehensive admin notification system for Mark@ChristsLovingHands.org and Melanie@ChristsLovingHands.org
+- Created automated email notifications for: new registrations, cancellations, waitlist additions
+- All admin actions (status changes, deletions, no-show markings) now trigger notifications to administrators
+- Email notifications include complete event and registrant details with professional styling
+- Admin notifications use SendGrid with info@ChristsLovingHands.org as sender address
 
 **July 24, 2025**
 - Fixed registration display issue in admin dashboard
