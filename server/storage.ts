@@ -31,6 +31,8 @@ export interface IStorage {
   
   // Time Slots
   createTimeSlot(timeSlot: InsertTimeSlot): Promise<TimeSlot>;
+  updateTimeSlot(id: string, timeSlot: Partial<InsertTimeSlot>): Promise<TimeSlot>;
+  deleteTimeSlot(id: string): Promise<void>;
   getTimeSlotsByEvent(eventId: string): Promise<TimeSlot[]>;
   
   // Registrations
@@ -39,7 +41,7 @@ export interface IStorage {
   getRegistrationByToken(token: string): Promise<Registration | undefined>;
   updateRegistration(id: string, registration: Partial<InsertRegistration>): Promise<Registration>;
   cancelRegistration(token: string): Promise<void>;
-  updateRegistrationStatus(id: string, status: 'confirmed' | 'waitlist' | 'cancelled' | 'no_show'): Promise<void>;
+  updateRegistrationStatus(id: string, status: 'confirmed' | 'waitlist' | 'cancelled' | 'no-show'): Promise<void>;
   deleteRegistration(id: string): Promise<void>;
   checkDuplicateRegistration(email: string, phone: string, eventId: string): Promise<boolean>;
   notifyWaitlist(eventId: string, timeSlotId: string): Promise<void>;
@@ -65,7 +67,24 @@ export interface IStorage {
     totalRegistrations: number;
     waitlistCount: number;
     noShowRate: number;
+    dailyAverage: number;
+    weeklyTotal: number;
+    capacityUtilization: number;
+    statusDistribution: {
+      confirmed: number;
+      waitlist: number;
+      cancelled: number;
+      no_show: number;
+    };
   }>;
+  getRecentActivity(): Promise<Array<{
+    id: string;
+    type: string;
+    description: string;
+    timestamp: Date;
+    status?: string;
+    eventTitle?: string;
+  }>>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -268,18 +287,7 @@ export class DatabaseStorage implements IStorage {
       .where(eq(registrations.uniqueCancelToken, token));
   }
 
-  async checkDuplicateRegistration(email: string, phone: string, eventId: string): Promise<boolean> {
-    const existing = await db
-      .select()
-      .from(registrations)
-      .where(and(
-        eq(registrations.eventId, eventId),
-        eq(registrations.email, email)
-      ))
-      .limit(1);
-    
-    return existing.length > 0;
-  }
+
 
   async updateRegistrationStatus(id: string, status: 'confirmed' | 'waitlist' | 'cancelled' | 'no-show'): Promise<void> {
     await db
@@ -491,8 +499,19 @@ export class DatabaseStorage implements IStorage {
     totalRegistrations: number;
     waitlistCount: number;
     noShowRate: number;
+    dailyAverage: number;
+    weeklyTotal: number;
+    capacityUtilization: number;
+    statusDistribution: {
+      confirmed: number;
+      waitlist: number;
+      cancelled: number;
+      no_show: number;
+    };
   }> {
     const now = new Date();
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
     
     // Active events count
     const [activeEventsResult] = await db
@@ -516,7 +535,7 @@ export class DatabaseStorage implements IStorage {
     const [noShowResult] = await db
       .select({ 
         total: count(),
-        noShows: sql<number>`COUNT(CASE WHEN ${registrations.status} = 'no-show' THEN 1 END)`
+        noShows: sql<number>`COUNT(CASE WHEN ${registrations.status} = 'no_show' THEN 1 END)`
       })
       .from(registrations)
       .where(lte(sql`${registrations.createdAt}`, sql`NOW() - INTERVAL '1 week'`));
@@ -524,13 +543,120 @@ export class DatabaseStorage implements IStorage {
     const noShowRate = noShowResult.total > 0 
       ? Math.round((noShowResult.noShows / noShowResult.total) * 100)
       : 0;
+
+    // Weekly registrations
+    const [weeklyResult] = await db
+      .select({ count: count() })
+      .from(registrations)
+      .where(gte(registrations.createdAt, oneWeekAgo));
+
+    const dailyAverage = Math.round(weeklyResult.count / 7);
+
+    // Status distribution
+    const statusResults = await db
+      .select({ 
+        status: registrations.status,
+        count: count()
+      })
+      .from(registrations)
+      .groupBy(registrations.status);
+
+    const statusDistribution = {
+      confirmed: 0,
+      waitlist: 0,
+      cancelled: 0,
+      no_show: 0
+    };
+
+    statusResults.forEach(result => {
+      if (result.status in statusDistribution) {
+        statusDistribution[result.status as keyof typeof statusDistribution] = result.count;
+      }
+    });
+
+    // Capacity utilization
+    const [capacityResult] = await db
+      .select({
+        totalCapacity: sql<number>`SUM(${timeSlots.capacity})`,
+        usedCapacity: sql<number>`COUNT(${registrations.id})`
+      })
+      .from(timeSlots)
+      .leftJoin(registrations, and(
+        eq(timeSlots.id, registrations.timeSlotId),
+        eq(registrations.status, 'confirmed')
+      ))
+      .innerJoin(events, eq(timeSlots.eventId, events.id))
+      .where(gte(events.date, now));
+
+    const capacityUtilization = capacityResult.totalCapacity > 0 
+      ? Math.round((capacityResult.usedCapacity / capacityResult.totalCapacity) * 100)
+      : 0;
     
     return {
       activeEvents: activeEventsResult.count,
       totalRegistrations: totalRegistrationsResult.count,
       waitlistCount: waitlistResult.count,
-      noShowRate
+      noShowRate,
+      dailyAverage,
+      weeklyTotal: weeklyResult.count,
+      capacityUtilization,
+      statusDistribution
     };
+  }
+
+  async getRecentActivity(): Promise<Array<{
+    id: string;
+    type: string;
+    description: string;
+    timestamp: Date;
+    status?: string;
+    eventTitle?: string;
+  }>> {
+    // Get recent registrations with event details
+    const recentRegistrations = await db
+      .select({
+        id: registrations.id,
+        name: registrations.name,
+        status: registrations.status,
+        createdAt: registrations.createdAt,
+        updatedAt: registrations.updatedAt,
+        eventTitle: events.title
+      })
+      .from(registrations)
+      .innerJoin(timeSlots, eq(registrations.timeSlotId, timeSlots.id))
+      .innerJoin(events, eq(timeSlots.eventId, events.id))
+      .orderBy(desc(registrations.updatedAt))
+      .limit(50);
+
+    const activities = [];
+
+    for (const reg of recentRegistrations) {
+      // Determine activity type based on status and timestamps
+      let type = 'registration';
+      let description = `${reg.name} registered for ${reg.eventTitle}`;
+      
+      if (reg.status === 'cancelled') {
+        type = 'cancellation';
+        description = `${reg.name} cancelled registration for ${reg.eventTitle}`;
+      } else if (reg.status === 'waitlist') {
+        type = 'waitlist';
+        description = `${reg.name} joined waitlist for ${reg.eventTitle}`;
+      } else if (reg.status === 'no-show') {
+        type = 'no_show';
+        description = `${reg.name} marked as no-show for ${reg.eventTitle}`;
+      }
+
+      activities.push({
+        id: reg.id,
+        type,
+        description,
+        timestamp: reg.updatedAt || reg.createdAt,
+        status: reg.status,
+        eventTitle: reg.eventTitle
+      });
+    }
+
+    return activities.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
   }
 }
 

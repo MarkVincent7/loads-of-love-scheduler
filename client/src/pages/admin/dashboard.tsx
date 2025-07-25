@@ -2,14 +2,26 @@ import { useEffect } from "react";
 import { useLocation } from "wouter";
 import AdminLayout from "@/components/admin-layout";
 import { useAuthStore } from "@/lib/auth";
-import { useAdminStats } from "@/hooks/use-admin";
+import { useAdminStats, useRecentActivity } from "@/hooks/use-admin";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, Users, Clock, TrendingDown } from "lucide-react";
+import { Calendar, Users, Clock, TrendingDown, Activity, UserCheck, UserX } from "lucide-react";
 
 export default function AdminDashboard() {
   const [, setLocation] = useLocation();
   const { isAuthenticated } = useAuthStore();
-  const { data: stats, isLoading } = useAdminStats();
+  const { data: stats, isLoading } = useAdminStats() as {
+    data: {
+      activeEvents: number;
+      totalRegistrations: number;
+      waitlistCount: number;
+      noShowRate: number;
+    } | undefined;
+    isLoading: boolean;
+  };
+  const { data: recentActivity, isLoading: activityLoading } = useRecentActivity() as {
+    data: Array<{ type: string; description: string; timestamp: string }> | undefined;
+    isLoading: boolean;
+  };
 
   useEffect(() => {
     if (!isAuthenticated()) {
@@ -86,9 +98,38 @@ export default function AdminDashboard() {
             <CardTitle>Recent Activity</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-center py-8 text-gray-500">
-              <p>Activity feed coming soon...</p>
-            </div>
+            {activityLoading ? (
+              <div className="text-center py-8 text-gray-500">
+                <p>Loading activity...</p>
+              </div>
+            ) : recentActivity && recentActivity.length > 0 ? (
+              <div className="space-y-3">
+                {recentActivity.slice(0, 10).map((activity: { type: string; description: string; timestamp: string }, index: number) => (
+                  <div key={index} className="flex items-start gap-3 p-2 hover:bg-gray-50 rounded">
+                    <div className="flex-shrink-0 mt-1">
+                      {activity.type === 'registration' && <UserCheck className="h-4 w-4 text-green-600" />}
+                      {activity.type === 'cancellation' && <UserX className="h-4 w-4 text-red-600" />}
+                      {activity.type === 'waitlist' && <Clock className="h-4 w-4 text-yellow-600" />}
+                      {activity.type === 'no_show' && <TrendingDown className="h-4 w-4 text-gray-600" />}
+                      {!['registration', 'cancellation', 'waitlist', 'no_show'].includes(activity.type) && <Activity className="h-4 w-4 text-blue-600" />}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-900 truncate">
+                        {activity.description}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {new Date(activity.timestamp).toLocaleDateString()} at {new Date(activity.timestamp).toLocaleTimeString()}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-gray-500">
+                <Activity className="h-8 w-8 mx-auto mb-2 text-gray-400" />
+                <p>No recent activity found</p>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

@@ -8,6 +8,12 @@ export function useAdminStats() {
   });
 }
 
+export function useRecentActivity() {
+  return useQuery({
+    queryKey: ["/api/admin/recent-activity"],
+  });
+}
+
 export function useRegistrations(eventId?: string) {
   return useQuery({
     queryKey: ["/api/admin/registrations", { eventId }],

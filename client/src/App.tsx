@@ -10,6 +10,7 @@ import AdminDashboard from "@/pages/admin/dashboard";
 import AdminEvents from "@/pages/admin/events";
 import AdminRegistrations from "@/pages/admin/registrations";
 import AdminBlacklist from "@/pages/admin/blacklist";
+import AdminAnalytics from "@/pages/admin/analytics";
 import CancelRegistration from "@/pages/cancel/[token]";
 import Register from "@/pages/register";
 import RegistrationSuccess from "@/pages/registration-success";
@@ -25,6 +26,7 @@ function Router() {
       <Route path="/admin/events" component={AdminEvents} />
       <Route path="/admin/registrations" component={AdminRegistrations} />
       <Route path="/admin/blacklist" component={AdminBlacklist} />
+      <Route path="/admin/analytics" component={AdminAnalytics} />
       <Route path="/cancel/:token" component={CancelRegistration} />
       <Route component={NotFound} />
     </Switch>
