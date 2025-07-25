@@ -9,7 +9,7 @@ export default function HowItWorks() {
               <span className="text-2xl font-bold text-primary-600">1</span>
             </div>
             <h4 className="text-lg font-semibold text-gray-900 mb-2">Reserve Your Spot</h4>
-            <p className="text-gray-600">Choose from available time slots that work best for your schedule.</p>
+            <p className="text-gray-600">Choose your preferred time slot and fill out the simple registration form. We'll confirm your reservation right away.</p>
           </div>
           <div className="text-center">
             <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
