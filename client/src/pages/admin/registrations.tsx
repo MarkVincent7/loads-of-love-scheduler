@@ -104,11 +104,23 @@ function EventRegistrationsTable({
                   <div className="space-y-1">
                     <div className="flex items-center space-x-2 text-sm">
                       <Mail className="w-3 h-3" />
-                      <span>{registration.email}</span>
+                      <a 
+                        href={`mailto:${registration.email}`}
+                        className="text-blue-600 hover:text-blue-800 hover:underline"
+                        title={`Send email to ${registration.email}`}
+                      >
+                        {registration.email}
+                      </a>
                     </div>
                     <div className="flex items-center space-x-2 text-sm">
                       <Phone className="w-3 h-3" />
-                      <span>{registration.phone}</span>
+                      <a 
+                        href={`tel:${registration.phone}`}
+                        className="text-blue-600 hover:text-blue-800 hover:underline"
+                        title={`Call ${registration.phone}`}
+                      >
+                        {registration.phone}
+                      </a>
                     </div>
                   </div>
                 </TableCell>

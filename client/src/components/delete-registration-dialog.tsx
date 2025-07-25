@@ -71,8 +71,8 @@ export default function DeleteRegistrationDialog({
 
           <div className="bg-gray-50 p-3 rounded-lg space-y-2">
             <div><strong>Name:</strong> {registration.name}</div>
-            <div><strong>Email:</strong> {registration.email}</div>
-            <div><strong>Phone:</strong> {registration.phone}</div>
+            <div><strong>Email:</strong> <a href={`mailto:${registration.email}`} className="text-blue-600 hover:text-blue-800 hover:underline">{registration.email}</a></div>
+            <div><strong>Phone:</strong> <a href={`tel:${registration.phone}`} className="text-blue-600 hover:text-blue-800 hover:underline">{registration.phone}</a></div>
             <div><strong>Status:</strong> 
               <span className={`ml-2 px-2 py-1 rounded-full text-xs font-medium ${
                 registration.status === 'confirmed' 

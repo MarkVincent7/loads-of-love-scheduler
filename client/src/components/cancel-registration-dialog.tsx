@@ -43,8 +43,12 @@ export default function CancelRegistrationDialog({ children, registration }: Can
           {/* Registration Info */}
           <div className="bg-red-50 border border-red-200 p-3 rounded-lg">
             <h4 className="font-medium text-red-900 mb-1">{registration.name}</h4>
-            <p className="text-sm text-red-700 mb-1">{registration.email}</p>
-            <p className="text-sm text-red-700">{registration.phone}</p>
+            <p className="text-sm mb-1">
+              <a href={`mailto:${registration.email}`} className="text-red-600 hover:text-red-800 hover:underline">{registration.email}</a>
+            </p>
+            <p className="text-sm">
+              <a href={`tel:${registration.phone}`} className="text-red-600 hover:text-red-800 hover:underline">{registration.phone}</a>
+            </p>
             <div className="text-xs text-red-600 mt-2">
               <p>Registered: {format(new Date(registration.createdAt), 'MMM d, yyyy h:mm a')}</p>
               <p>Status: {registration.status.charAt(0).toUpperCase() + registration.status.slice(1)}</p>

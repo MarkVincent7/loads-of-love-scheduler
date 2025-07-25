@@ -61,6 +61,7 @@ Preferred communication style: Simple, everyday language.
 - Calendar events include event title, date, time, location, and detailed description for easy scheduling
 - Enhanced confirmation emails to specify "3 loads of laundry for free" service offering
 - Added duplicate cancel buttons at top and bottom of emails for better accessibility
+- Added rich links to registration dashboard contact information for direct email and phone actions
 
 **July 24, 2025**
 - Fixed registration display issue in admin dashboard
