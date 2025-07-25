@@ -47,6 +47,10 @@ Preferred communication style: Simple, everyday language.
 - Enhanced admin dashboard functionality to trigger waitlist notifications on all status changes
 - Added waitlist notification system to admin actions: status updates, cancellations, deletions, and no-show markings
 - All admin registration management actions now automatically notify waitlist when confirmed slots become available
+- Fixed critical date display issue where events showed incorrect dates due to timezone conversion problems
+- Updated event creation, editing, and cloning to use consistent local date parsing without UTC conversion
+- Resolved discrepancy between admin dashboard date input (07/29/25) and public display (Monday 07/28)
+- Implemented proper date handling across frontend forms and backend processing for accurate date display
 
 **July 24, 2025**
 - Fixed registration display issue in admin dashboard

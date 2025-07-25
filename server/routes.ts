@@ -443,24 +443,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const timeSlots = await storage.getTimeSlotsByEvent(id);
       
+      // Parse the date as local date without timezone conversion
+      const [year, month, day] = date.split('-').map(Number);
+      const eventDate = new Date(year, month - 1, day); // month is 0-indexed
+      
       const newEvent = await storage.createEvent({
         title: originalEvent.title,
         description: originalEvent.description,
-        date: new Date(date),
+        date: eventDate,
         location: originalEvent.location,
         laundromatName: originalEvent.laundromatName,
         laundromatAddress: originalEvent.laundromatAddress
       });
       
-      // Clone time slots
+      // Clone time slots with consistent date handling
       for (const slot of timeSlots) {
-        const newStartTime = new Date(slot.startTime);
-        const newEndTime = new Date(slot.endTime);
+        const originalStart = new Date(slot.startTime);
+        const originalEnd = new Date(slot.endTime);
         
-        // Update dates to match new event date
-        const eventDate = new Date(date);
-        newStartTime.setFullYear(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
-        newEndTime.setFullYear(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
+        // Create new datetime objects using the new event date but same times
+        const newStartTime = new Date(year, month - 1, day, 
+          originalStart.getHours(), originalStart.getMinutes(), 
+          originalStart.getSeconds(), originalStart.getMilliseconds());
+        const newEndTime = new Date(year, month - 1, day, 
+          originalEnd.getHours(), originalEnd.getMinutes(), 
+          originalEnd.getSeconds(), originalEnd.getMilliseconds());
         
         await storage.createTimeSlot({
           eventId: newEvent.id,

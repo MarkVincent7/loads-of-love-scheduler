@@ -65,19 +65,17 @@ export default function CreateEventDialog({ children }: CreateEventDialogProps) 
   };
 
   const onSubmit = (data: EventFormData) => {
-    // Convert date and times to proper DateTime objects - ensure we use the event date correctly
-    const eventDate = new Date(data.date + 'T00:00:00'); // Parse as local date
+    // Parse date as local date without timezone conversion
+    const [year, month, day] = data.date.split('-').map(Number);
+    const eventDate = new Date(year, month - 1, day); // month is 0-indexed
     
     const formattedTimeSlots = data.timeSlots.map(slot => {
       const [startHour, startMinute] = slot.startTime.split(':');
       const [endHour, endMinute] = slot.endTime.split(':');
       
-      // Create new Date objects for the specific event date
-      const startTime = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
-      startTime.setHours(parseInt(startHour), parseInt(startMinute), 0, 0);
-      
-      const endTime = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
-      endTime.setHours(parseInt(endHour), parseInt(endMinute), 0, 0);
+      // Create datetime objects using the same date
+      const startTime = new Date(year, month - 1, day, parseInt(startHour), parseInt(startMinute));
+      const endTime = new Date(year, month - 1, day, parseInt(endHour), parseInt(endMinute));
       
       return {
         startTime: startTime.toISOString(),
@@ -89,7 +87,7 @@ export default function CreateEventDialog({ children }: CreateEventDialogProps) 
     createEventMutation.mutate({
       title: data.title,
       description: data.description || "",
-      date: eventDate.toISOString().split('T')[0] + 'T00:00:00.000Z', // Ensure proper date format
+      date: eventDate.toISOString(),
       location: data.location,
       laundromatName: data.laundromatName || "",
       laundromatAddress: data.laundromatAddress || "",

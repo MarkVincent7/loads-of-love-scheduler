@@ -41,7 +41,7 @@ export default function EditEventDialog({ children, event }: EditEventDialogProp
     defaultValues: {
       title: event.title,
       description: event.description || "",
-      date: new Date(event.date).toISOString().split('T')[0],
+      date: new Date(event.date).toLocaleDateString('en-CA'), // YYYY-MM-DD format
       location: event.location,
       timeSlots: event.timeSlots.map(slot => ({
         id: slot.id,
@@ -59,7 +59,7 @@ export default function EditEventDialog({ children, event }: EditEventDialogProp
     form.reset({
       title: event.title,
       description: event.description || "",
-      date: new Date(event.date).toISOString().split('T')[0],
+      date: new Date(event.date).toLocaleDateString('en-CA'), // YYYY-MM-DD format
       location: event.location,
       timeSlots: event.timeSlots.map(slot => ({
         id: slot.id,
@@ -83,18 +83,17 @@ export default function EditEventDialog({ children, event }: EditEventDialogProp
   };
 
   const onSubmit = (data: EventFormData) => {
-    // Convert date and times to proper DateTime objects
-    const eventDate = new Date(data.date);
+    // Parse date as local date without timezone conversion
+    const [year, month, day] = data.date.split('-').map(Number);
+    const eventDate = new Date(year, month - 1, day); // month is 0-indexed
     
     const formattedTimeSlots = data.timeSlots.map(slot => {
       const [startHour, startMinute] = slot.startTime.split(':');
       const [endHour, endMinute] = slot.endTime.split(':');
       
-      const startTime = new Date(eventDate);
-      startTime.setHours(parseInt(startHour), parseInt(startMinute), 0, 0);
-      
-      const endTime = new Date(eventDate);
-      endTime.setHours(parseInt(endHour), parseInt(endMinute), 0, 0);
+      // Create datetime objects using the same date
+      const startTime = new Date(year, month - 1, day, parseInt(startHour), parseInt(startMinute));
+      const endTime = new Date(year, month - 1, day, parseInt(endHour), parseInt(endMinute));
       
       return {
         id: slot.id,
