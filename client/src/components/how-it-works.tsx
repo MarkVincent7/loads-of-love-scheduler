@@ -15,8 +15,8 @@ export default function HowItWorks() {
             <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <span className="text-2xl font-bold text-primary-600">2</span>
             </div>
-            <h4 className="text-lg font-semibold text-gray-900 mb-2">Reserve Your Spot</h4>
-            <p className="text-gray-600">Fill out the simple form with your contact information.</p>
+            <h4 className="text-lg font-semibold text-gray-900 mb-2">Bring Your Laundry</h4>
+            <p className="text-gray-600">Show up during your scheduled time with your dirty clothes. We'll provide all the soap and supplies you need.</p>
           </div>
           <div className="text-center">
             <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
