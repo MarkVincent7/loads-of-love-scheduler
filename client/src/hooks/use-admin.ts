@@ -167,6 +167,7 @@ export function useMarkAsNoShow() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/registrations"] });
       queryClient.invalidateQueries({ queryKey: ["/api/events"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/blacklist"] });
       toast({
         title: "Marked as No-Show",
         description: "Registration marked as no-show and added to blacklist",

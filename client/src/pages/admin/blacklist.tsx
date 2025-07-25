@@ -13,12 +13,12 @@ export default function AdminBlacklist() {
   const { data: blacklist, isLoading } = useBlacklist();
 
   useEffect(() => {
-    if (!isAuthenticated()) {
+    if (!isAuthenticated) {
       setLocation("/admin/login");
     }
   }, [isAuthenticated, setLocation]);
 
-  if (!isAuthenticated()) {
+  if (!isAuthenticated) {
     return null;
   }
 
@@ -42,9 +42,9 @@ export default function AdminBlacklist() {
           <CardContent>
             {isLoading ? (
               <div className="text-center py-8">Loading...</div>
-            ) : blacklist && blacklist.length > 0 ? (
+            ) : Array.isArray(blacklist) && blacklist.length > 0 ? (
               <div className="space-y-4">
-                {blacklist.map((item) => (
+                {blacklist.map((item: any) => (
                   <div key={item.id} className="flex items-center justify-between p-4 border rounded-lg">
                     <div>
                       <p className="font-medium">{item.name}</p>
