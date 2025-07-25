@@ -162,6 +162,22 @@ export class DatabaseStorage implements IStorage {
     return newTimeSlot;
   }
 
+  async updateTimeSlot(id: string, timeSlot: Partial<InsertTimeSlot>): Promise<TimeSlot> {
+    const [updatedTimeSlot] = await db
+      .update(timeSlots)
+      .set({
+        ...timeSlot,
+        updatedAt: new Date()
+      })
+      .where(eq(timeSlots.id, id))
+      .returning();
+    return updatedTimeSlot;
+  }
+
+  async deleteTimeSlot(id: string): Promise<void> {
+    await db.delete(timeSlots).where(eq(timeSlots.id, id));
+  }
+
   async getTimeSlotsByEvent(eventId: string): Promise<TimeSlot[]> {
     return db
       .select()

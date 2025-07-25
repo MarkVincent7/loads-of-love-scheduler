@@ -246,9 +246,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put("/api/admin/events/:id", authMiddleware, async (req, res) => {
     try {
       const { id } = req.params;
-      const eventData = insertEventSchema.partial().parse(req.body);
+      const { timeSlots: timeSlotsData, ...eventData } = req.body;
       
-      const event = await storage.updateEvent(id, eventData);
+      // Parse and validate event data (this will handle date conversion)
+      const validatedEventData = insertEventSchema.partial().parse({
+        ...eventData,
+        date: eventData.date ? new Date(eventData.date) : undefined
+      });
+      
+      const event = await storage.updateEvent(id, validatedEventData);
+      
+      // Update time slots if provided
+      if (timeSlotsData && Array.isArray(timeSlotsData)) {
+        // First, get existing time slots to check for registrations
+        const existingSlots = await storage.getTimeSlotsByEvent(id);
+        
+        // Delete old time slots that aren't in the new list (but only if no registrations)
+        for (const existingSlot of existingSlots) {
+          const stillExists = timeSlotsData.find(newSlot => newSlot.id === existingSlot.id);
+          if (!stillExists) {
+            // Check if this slot has registrations
+            const registrations = await storage.getRegistrationsByEvent(id);
+            const hasRegistrations = registrations.some(r => r.timeSlot.id === existingSlot.id);
+            
+            if (!hasRegistrations) {
+              await storage.deleteTimeSlot(existingSlot.id);
+            }
+          }
+        }
+        
+        // Create or update time slots
+        for (const slotData of timeSlotsData) {
+          if (slotData.id) {
+            // Update existing slot
+            const validatedSlotData = insertTimeSlotSchema.partial().parse({
+              startTime: new Date(slotData.startTime),
+              endTime: new Date(slotData.endTime),
+              capacity: slotData.capacity
+            });
+            await storage.updateTimeSlot(slotData.id, validatedSlotData);
+          } else {
+            // Create new slot
+            const validatedSlotData = insertTimeSlotSchema.parse({
+              ...slotData,
+              eventId: event.id,
+              startTime: new Date(slotData.startTime),
+              endTime: new Date(slotData.endTime)
+            });
+            await storage.createTimeSlot(validatedSlotData);
+          }
+        }
+      }
+      
       res.json(event);
     } catch (error) {
       if (error instanceof z.ZodError) {

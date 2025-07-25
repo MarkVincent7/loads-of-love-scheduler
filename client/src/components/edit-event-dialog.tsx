@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Plus, Trash2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import type { Event, TimeSlot } from "@shared/schema";
 
 const eventSchema = z.object({
@@ -16,6 +17,12 @@ const eventSchema = z.object({
   description: z.string().optional(),
   date: z.string().min(1, "Date is required"),
   location: z.string().min(1, "Location is required"),
+  timeSlots: z.array(z.object({
+    id: z.string().optional(),
+    startTime: z.string().min(1, "Start time is required"),
+    endTime: z.string().min(1, "End time is required"),
+    capacity: z.number().min(1, "Capacity must be at least 1"),
+  })).min(1, "At least one time slot is required"),
 });
 
 type EventFormData = z.infer<typeof eventSchema>;
@@ -36,8 +43,16 @@ export default function EditEventDialog({ children, event }: EditEventDialogProp
       description: event.description || "",
       date: new Date(event.date).toISOString().split('T')[0],
       location: event.location,
+      timeSlots: event.timeSlots.map(slot => ({
+        id: slot.id,
+        startTime: new Date(slot.startTime).toTimeString().slice(0, 5),
+        endTime: new Date(slot.endTime).toTimeString().slice(0, 5),
+        capacity: slot.capacity,
+      })),
     },
   });
+
+  const timeSlots = form.watch("timeSlots");
 
   // Reset form when event changes
   useEffect(() => {
@@ -46,11 +61,48 @@ export default function EditEventDialog({ children, event }: EditEventDialogProp
       description: event.description || "",
       date: new Date(event.date).toISOString().split('T')[0],
       location: event.location,
+      timeSlots: event.timeSlots.map(slot => ({
+        id: slot.id,
+        startTime: new Date(slot.startTime).toTimeString().slice(0, 5),
+        endTime: new Date(slot.endTime).toTimeString().slice(0, 5),
+        capacity: slot.capacity,
+      })),
     });
   }, [event, form]);
 
+  const addTimeSlot = () => {
+    const currentSlots = form.getValues("timeSlots");
+    form.setValue("timeSlots", [...currentSlots, { startTime: "", endTime: "", capacity: 10 }]);
+  };
+
+  const removeTimeSlot = (index: number) => {
+    const currentSlots = form.getValues("timeSlots");
+    if (currentSlots.length > 1) {
+      form.setValue("timeSlots", currentSlots.filter((_, i) => i !== index));
+    }
+  };
+
   const onSubmit = (data: EventFormData) => {
+    // Convert date and times to proper DateTime objects
     const eventDate = new Date(data.date);
+    
+    const formattedTimeSlots = data.timeSlots.map(slot => {
+      const [startHour, startMinute] = slot.startTime.split(':');
+      const [endHour, endMinute] = slot.endTime.split(':');
+      
+      const startTime = new Date(eventDate);
+      startTime.setHours(parseInt(startHour), parseInt(startMinute), 0, 0);
+      
+      const endTime = new Date(eventDate);
+      endTime.setHours(parseInt(endHour), parseInt(endMinute), 0, 0);
+      
+      return {
+        id: slot.id,
+        startTime: startTime.toISOString(),
+        endTime: endTime.toISOString(),
+        capacity: slot.capacity,
+      };
+    });
 
     updateEventMutation.mutate({
       id: event.id,
@@ -59,6 +111,7 @@ export default function EditEventDialog({ children, event }: EditEventDialogProp
         description: data.description || "",
         date: eventDate.toISOString(),
         location: data.location,
+        timeSlots: formattedTimeSlots,
       }
     }, {
       onSuccess: () => {
@@ -72,11 +125,11 @@ export default function EditEventDialog({ children, event }: EditEventDialogProp
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit Event</DialogTitle>
           <DialogDescription>
-            Update the details for this event. Note: Time slots are managed separately.
+            Update all details for this event including location and time slots.
           </DialogDescription>
         </DialogHeader>
         
@@ -125,6 +178,94 @@ export default function EditEventDialog({ children, event }: EditEventDialogProp
               placeholder="Optional event description..."
               rows={3}
             />
+          </div>
+
+          {/* Time Slots Section */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <Label className="text-base font-medium">Time Slots *</Label>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={addTimeSlot}
+                className="flex items-center gap-2"
+              >
+                <Plus className="w-4 h-4" />
+                Add Time Slot
+              </Button>
+            </div>
+            
+            {timeSlots.map((slot, index) => (
+              <div key={index} className="grid grid-cols-4 gap-3 p-3 border rounded-lg">
+                <div>
+                  <Label htmlFor={`timeSlots.${index}.startTime`} className="text-sm">Start Time</Label>
+                  <Input
+                    id={`timeSlots.${index}.startTime`}
+                    type="time"
+                    {...form.register(`timeSlots.${index}.startTime`)}
+                  />
+                  {form.formState.errors.timeSlots?.[index]?.startTime && (
+                    <p className="text-xs text-red-600 mt-1">
+                      {form.formState.errors.timeSlots[index]?.startTime?.message}
+                    </p>
+                  )}
+                </div>
+                
+                <div>
+                  <Label htmlFor={`timeSlots.${index}.endTime`} className="text-sm">End Time</Label>
+                  <Input
+                    id={`timeSlots.${index}.endTime`}
+                    type="time"
+                    {...form.register(`timeSlots.${index}.endTime`)}
+                  />
+                  {form.formState.errors.timeSlots?.[index]?.endTime && (
+                    <p className="text-xs text-red-600 mt-1">
+                      {form.formState.errors.timeSlots[index]?.endTime?.message}
+                    </p>
+                  )}
+                </div>
+                
+                <div>
+                  <Label htmlFor={`timeSlots.${index}.capacity`} className="text-sm">Capacity</Label>
+                  <Input
+                    id={`timeSlots.${index}.capacity`}
+                    type="number"
+                    min="1"
+                    {...form.register(`timeSlots.${index}.capacity`, { 
+                      valueAsNumber: true 
+                    })}
+                  />
+                  {form.formState.errors.timeSlots?.[index]?.capacity && (
+                    <p className="text-xs text-red-600 mt-1">
+                      {form.formState.errors.timeSlots[index]?.capacity?.message}
+                    </p>
+                  )}
+                </div>
+                
+                <div className="flex items-end">
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => removeTimeSlot(index)}
+                    disabled={timeSlots.length === 1}
+                    className={cn(
+                      "w-full",
+                      timeSlots.length === 1 && "opacity-50 cursor-not-allowed"
+                    )}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            ))}
+            
+            {form.formState.errors.timeSlots && (
+              <p className="text-sm text-red-600">
+                {form.formState.errors.timeSlots.message}
+              </p>
+            )}
           </div>
 
           <div className="flex justify-end space-x-3">
