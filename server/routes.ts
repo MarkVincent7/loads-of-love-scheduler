@@ -86,14 +86,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Get event details for email
         const event = await storage.getEvent(validatedData.eventId);
         if (event) {
+          // Format date and time for email
+          const eventDate = new Date(targetSlot.startTime).toLocaleDateString('en-US', {
+            weekday: 'long',
+            year: 'numeric', 
+            month: 'long',
+            day: 'numeric'
+          });
+          
+          const startTime = new Date(targetSlot.startTime).toLocaleTimeString('en-US', {
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true
+          });
+          
+          const endTime = new Date(targetSlot.endTime).toLocaleTimeString('en-US', {
+            hour: 'numeric',
+            minute: '2-digit', 
+            hour12: true
+          });
+          
           await sendConfirmationEmail({
             name: registration.name,
             email: registration.email,
             eventTitle: event.title,
+            eventDate: eventDate,
+            eventTime: `${startTime} - ${endTime}`,
             eventLocation: event.location,
-            startTime: targetSlot.startTime.toISOString(),
-            endTime: targetSlot.endTime.toISOString(),
-            cancelToken: registration.uniqueCancelToken
+            cancelUrl: `${process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS}` : 'http://localhost:5000'}/cancel/${registration.uniqueCancelToken}`
           });
         }
         await sendConfirmationSMS(registration, targetSlot);

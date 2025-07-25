@@ -65,14 +65,34 @@ class EmailScheduler {
         return;
       }
 
+      // Format date and time for email
+      const eventDate = new Date(registration.timeSlot.startTime).toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric', 
+        month: 'long',
+        day: 'numeric'
+      });
+      
+      const startTime = new Date(registration.timeSlot.startTime).toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+      });
+      
+      const endTime = new Date(registration.timeSlot.endTime).toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit', 
+        hour12: true
+      });
+
       await sendReminderEmail({
         name: registration.name,
         email: registration.email,
         eventTitle: registration.event.title,
+        eventDate: eventDate,
+        eventTime: `${startTime} - ${endTime}`,
         eventLocation: registration.event.location,
-        startTime: registration.timeSlot.startTime.toISOString(),
-        endTime: registration.timeSlot.endTime.toISOString(),
-        cancelToken: registration.uniqueCancelToken
+        cancelUrl: `${process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS}` : 'http://localhost:5000'}/cancel/${registration.uniqueCancelToken}`
       }, 'day-before');
 
       // Mark reminder as sent
@@ -91,15 +111,35 @@ class EmailScheduler {
         return;
       }
 
+      // Format date and time for email
+      const eventDate = new Date(registration.timeSlot.startTime).toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric', 
+        month: 'long',
+        day: 'numeric'
+      });
+      
+      const startTime = new Date(registration.timeSlot.startTime).toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+      });
+      
+      const endTime = new Date(registration.timeSlot.endTime).toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit', 
+        hour12: true
+      });
+
       await sendReminderEmail({
         name: registration.name,
         email: registration.email,
         eventTitle: registration.event.title,
+        eventDate: eventDate,
+        eventTime: `${startTime} - ${endTime}`,
         eventLocation: registration.event.location,
-        startTime: registration.timeSlot.startTime.toISOString(),
-        endTime: registration.timeSlot.endTime.toISOString(),
-        cancelToken: registration.uniqueCancelToken
-      }, 'morning-of');
+        cancelUrl: `${process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS}` : 'http://localhost:5000'}/cancel/${registration.uniqueCancelToken}`
+      }, 'hour-before');
 
       // Mark reminder as sent
       await storage.markReminderSent(registration.id, 'morning-of');
