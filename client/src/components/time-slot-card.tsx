@@ -12,7 +12,6 @@ export default function TimeSlotCard({ timeSlot, event }: TimeSlotCardProps) {
   const [, setLocation] = useLocation();
   const availableSpots = timeSlot.capacity - timeSlot.registrationCount;
   const isFull = availableSpots <= 0;
-  const isWaitlistOnly = isFull && timeSlot.waitlistCount > 0;
 
   const handleClick = () => {
     // Navigate to registration page with time slot and event IDs
@@ -22,48 +21,87 @@ export default function TimeSlotCard({ timeSlot, event }: TimeSlotCardProps) {
   return (
     <div 
       className={cn(
-        "time-slot-card bg-white border-2 rounded-xl p-6 cursor-pointer transition-all duration-200",
+        "time-slot-card bg-white border-2 rounded-xl p-6 transition-all duration-200",
         "border-gray-200 hover:border-primary hover:-translate-y-1 hover:shadow-lg",
         isFull && "bg-gray-50"
       )}
-      onClick={handleClick}
     >
-      <div className="text-center">
-        <div className={cn(
-          "text-lg font-semibold mb-2",
-          isFull ? "text-gray-600" : "text-gray-900"
-        )}>
-          {format(new Date(timeSlot.startTime), 'EEEE, MMMM d, yyyy')}
+      <div className="space-y-3">
+        {/* Event Date */}
+        <div className="text-left">
+          <div className="text-xs font-medium text-gray-500 uppercase tracking-wide">Event Date</div>
+          <div className={cn(
+            "text-lg font-semibold",
+            isFull ? "text-gray-600" : "text-gray-900"
+          )}>
+            {format(new Date(timeSlot.startTime), 'EEEE, MMMM d, yyyy')}
+          </div>
         </div>
         
-        <div className={cn(
-          "text-2xl font-bold mb-3",
-          isFull ? "text-gray-600" : "text-primary"
-        )}>
-          {format(new Date(timeSlot.startTime), 'h:mm a')} - {format(new Date(timeSlot.endTime), 'h:mm a')}
+        {/* Event Time */}
+        <div className="text-left">
+          <div className="text-xs font-medium text-gray-500 uppercase tracking-wide">Event Time</div>
+          <div className={cn(
+            "text-xl font-bold",
+            isFull ? "text-gray-600" : "text-primary"
+          )}>
+            {format(new Date(timeSlot.startTime), 'h:mm a')} - {format(new Date(timeSlot.endTime), 'h:mm a')}
+          </div>
         </div>
         
-        {!isFull ? (
-          <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-600">
-            <span className="w-2 h-2 rounded-full bg-green-500 mr-2"></span>
-            <span>{availableSpots} spot{availableSpots !== 1 ? 's' : ''} left</span>
+        {/* Slots Left */}
+        <div className="text-left">
+          <div className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+            {isFull ? 'Status' : 'Slots Left'}
           </div>
-        ) : (
-          <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-700 border border-yellow-300">
-            <span className="w-2 h-2 rounded-full bg-yellow-500 mr-2"></span>
-            <span>Join Waitlist</span>
+          <div className="mt-1">
+            {!isFull ? (
+              <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-600">
+                <span className="w-2 h-2 rounded-full bg-green-500 mr-2"></span>
+                <span>{availableSpots} spot{availableSpots !== 1 ? 's' : ''} available</span>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-600">
+                  <span className="w-2 h-2 rounded-full bg-red-500 mr-2"></span>
+                  <span>Time slot is full</span>
+                </div>
+                {timeSlot.waitlistCount > 0 && (
+                  <div className="text-xs text-gray-400">
+                    {timeSlot.waitlistCount} already on waitlist
+                  </div>
+                )}
+              </div>
+            )}
           </div>
-        )}
-        
-        <div className="mt-4 text-sm text-gray-500">
-          {event.location}
         </div>
         
-        {isFull && timeSlot.waitlistCount > 0 && (
-          <div className="mt-2 text-xs text-gray-400">
-            {timeSlot.waitlistCount} on waitlist
+        {/* Event Location */}
+        <div className="text-left">
+          <div className="text-xs font-medium text-gray-500 uppercase tracking-wide">Event Location</div>
+          <div className="text-sm text-gray-700 font-medium">
+            {event.location}
           </div>
-        )}
+        </div>
+        
+        {/* Action Button */}
+        <div className="pt-2">
+          {!isFull ? (
+            <button
+              onClick={handleClick}
+              className="w-full bg-primary hover:bg-primary/90 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200"
+            >
+              Sign Up for This Slot
+            </button>
+          ) : (
+            <button
+              onClick={handleClick}
+              className="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200"
+            >
+              Join Waitlist
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
