@@ -143,9 +143,16 @@ export async function sendConfirmationEmail(details: {
               <p><strong>Location:</strong> ${details.eventLocation}</p>
             </div>
             
+            <p><strong>What you get:</strong></p>
+            <ul>
+              <li><strong>3 loads of laundry for free</strong> - washing, drying, and folding included</li>
+              <li>Free detergent and fabric softener provided</li>
+              <li>Volunteer assistance with washing and folding</li>
+            </ul>
+            
             <p><strong>What to bring:</strong></p>
             <ul>
-              <li>Your laundry (we provide detergent and fabric softener)</li>
+              <li>Your laundry (up to 3 loads)</li>
               <li>This confirmation email or your name for check-in</li>
             </ul>
             
@@ -182,8 +189,13 @@ export async function sendConfirmationEmail(details: {
       Time: ${details.eventTime}
       Location: ${details.eventLocation}
 
+      What you get:
+      - 3 loads of laundry for free - washing, drying, and folding included
+      - Free detergent and fabric softener provided
+      - Volunteer assistance with washing and folding
+
       What to bring:
-      - Your laundry (we provide detergent and fabric softener)
+      - Your laundry (up to 3 loads)
       - This confirmation email or your name for check-in
 
       Important notes:
@@ -671,9 +683,16 @@ export async function sendWaitlistConfirmationEmail(details: {
               <li>We'll send you notification as soon as a spot becomes available</li>
             </ul>
             
+            <p><strong>What you'll get when confirmed:</strong></p>
+            <ul>
+              <li><strong>3 loads of laundry for free</strong> - washing, drying, and folding included</li>
+              <li>Free detergent and fabric softener provided</li>
+              <li>Volunteer assistance with washing and folding</li>
+            </ul>
+            
             <p><strong>What to prepare:</strong></p>
             <ul>
-              <li>Have your laundry ready (we provide detergent and fabric softener)</li>
+              <li>Have your laundry ready (up to 3 loads)</li>
               <li>Be ready to respond quickly if a spot opens up</li>
               <li>Keep this confirmation for your records</li>
             </ul>
@@ -709,8 +728,13 @@ export async function sendWaitlistConfirmationEmail(details: {
       - You'll have priority based on when you joined the waitlist
       - We'll send you notification as soon as a spot becomes available
 
+      What you'll get when confirmed:
+      - 3 loads of laundry for free - washing, drying, and folding included
+      - Free detergent and fabric softener provided
+      - Volunteer assistance with washing and folding
+
       What to prepare:
-      - Have your laundry ready (we provide detergent and fabric softener)
+      - Have your laundry ready (up to 3 loads)
       - Be ready to respond quickly if a spot opens up
       - Keep this confirmation for your records
 

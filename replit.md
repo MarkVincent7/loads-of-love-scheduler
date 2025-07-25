@@ -59,6 +59,8 @@ Preferred communication style: Simple, everyday language.
 - Added calendar integration to confirmation emails with "Add to Calendar" buttons
 - Calendar buttons support Google Calendar, Outlook, and Yahoo Calendar with proper event details
 - Calendar events include event title, date, time, location, and detailed description for easy scheduling
+- Enhanced confirmation emails to specify "3 loads of laundry for free" service offering
+- Added duplicate cancel buttons at top and bottom of emails for better accessibility
 
 **July 24, 2025**
 - Fixed registration display issue in admin dashboard
