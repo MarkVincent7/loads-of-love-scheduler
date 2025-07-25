@@ -131,6 +131,10 @@ export async function sendConfirmationEmail(details: {
             
             <p>Your appointment has been confirmed for our free laundry service!</p>
             
+            <div style="text-align: center; margin: 20px 0;">
+              <a href="${details.cancelUrl}" style="display: inline-block; background: #dc2626; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">Cancel Appointment</a>
+            </div>
+            
             <div class="details">
               <h3>Appointment Details:</h3>
               <p><strong>Event:</strong> ${details.eventTitle}</p>
@@ -646,6 +650,10 @@ export async function sendWaitlistConfirmationEmail(details: {
             
             <div class="highlight">
               <p><strong>You've been added to the waitlist!</strong> This time slot is currently full, but we'll notify you immediately if a spot opens up.</p>
+            </div>
+            
+            <div style="text-align: center; margin: 20px 0;">
+              <a href="${details.cancelUrl}" style="display: inline-block; background: #dc2626; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">Leave Waitlist</a>
             </div>
             
             <div class="details">
