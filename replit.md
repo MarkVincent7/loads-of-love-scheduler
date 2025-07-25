@@ -10,6 +10,13 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+**July 25, 2025**
+- Added delete registration functionality for admins
+- Created delete confirmation dialog with warning messages
+- Added automatic waitlist promotion when confirmed registrations are deleted
+- Updated backend routes to separate cancel vs delete operations
+- Identified MailerSend trial account limitations (quota reached, can only send to verified addresses)
+
 **July 24, 2025**
 - Fixed registration display issue in admin dashboard
 - Resolved API route conflict between path-based and query-based endpoints
