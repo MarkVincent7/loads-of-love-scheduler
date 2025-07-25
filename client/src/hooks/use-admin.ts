@@ -260,3 +260,28 @@ export function useAddToBlacklist() {
     },
   });
 }
+
+export function useRemoveFromBlacklist() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  
+  return useMutation({
+    mutationFn: async (blacklistId: string) => {
+      await apiRequest("DELETE", `/api/admin/blacklist/${blacklistId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/blacklist"] });
+      toast({
+        title: "Removed from Blacklist",
+        description: "User has been removed from blacklist",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to remove from blacklist",
+        variant: "destructive",
+      });
+    },
+  });
+}

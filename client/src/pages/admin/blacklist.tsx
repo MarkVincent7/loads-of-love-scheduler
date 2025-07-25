@@ -3,7 +3,7 @@ import { useLocation } from "wouter";
 import AdminLayout from "@/components/admin-layout";
 import AddBlacklistDialog from "@/components/add-blacklist-dialog";
 import { useAuthStore } from "@/lib/auth";
-import { useBlacklist } from "@/hooks/use-admin";
+import { useBlacklist, useRemoveFromBlacklist } from "@/hooks/use-admin";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
@@ -11,6 +11,7 @@ export default function AdminBlacklist() {
   const [, setLocation] = useLocation();
   const { isAuthenticated } = useAuthStore();
   const { data: blacklist, isLoading } = useBlacklist();
+  const removeFromBlacklistMutation = useRemoveFromBlacklist();
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -51,7 +52,14 @@ export default function AdminBlacklist() {
                       <p className="text-sm text-gray-600">{item.email} • {item.phone}</p>
                       <p className="text-sm text-gray-500">{item.reason}</p>
                     </div>
-                    <Button variant="outline" size="sm">Remove</Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => removeFromBlacklistMutation.mutate(item.id)}
+                      disabled={removeFromBlacklistMutation.isPending}
+                    >
+                      {removeFromBlacklistMutation.isPending ? "Removing..." : "Remove"}
+                    </Button>
                   </div>
                 ))}
               </div>
