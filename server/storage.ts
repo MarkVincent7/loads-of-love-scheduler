@@ -42,7 +42,7 @@ export interface IStorage {
   updateRegistrationStatus(id: string, status: 'confirmed' | 'waitlist' | 'cancelled' | 'no_show'): Promise<void>;
   deleteRegistration(id: string): Promise<void>;
   checkDuplicateRegistration(email: string, phone: string, eventId: string): Promise<boolean>;
-  promoteFromWaitlist(eventId: string, timeSlotId: string): Promise<void>;
+  notifyWaitlist(eventId: string, timeSlotId: string): Promise<void>;
   
   // Blacklist
   addToBlacklist(blacklistItem: InsertBlacklist): Promise<Blacklist>;
@@ -168,8 +168,7 @@ export class DatabaseStorage implements IStorage {
     const [updatedTimeSlot] = await db
       .update(timeSlots)
       .set({
-        ...timeSlot,
-        updatedAt: new Date()
+        ...timeSlot
       })
       .where(eq(timeSlots.id, id))
       .returning();
@@ -269,7 +268,20 @@ export class DatabaseStorage implements IStorage {
       .where(eq(registrations.uniqueCancelToken, token));
   }
 
-  async updateRegistrationStatus(id: string, status: 'confirmed' | 'waitlist' | 'cancelled' | 'no_show'): Promise<void> {
+  async checkDuplicateRegistration(email: string, phone: string, eventId: string): Promise<boolean> {
+    const existing = await db
+      .select()
+      .from(registrations)
+      .where(and(
+        eq(registrations.eventId, eventId),
+        eq(registrations.email, email)
+      ))
+      .limit(1);
+    
+    return existing.length > 0;
+  }
+
+  async updateRegistrationStatus(id: string, status: 'confirmed' | 'waitlist' | 'cancelled' | 'no-show'): Promise<void> {
     await db
       .update(registrations)
       .set({
@@ -289,16 +301,16 @@ export class DatabaseStorage implements IStorage {
       // Delete the registration
       await db.delete(registrations).where(eq(registrations.id, id));
       
-      // If it was confirmed, promote someone from waitlist
+      // If it was confirmed, notify waitlist
       if (registration.status === 'confirmed') {
-        await this.promoteFromWaitlist(registration.eventId, registration.timeSlotId);
+        await this.notifyWaitlist(registration.eventId, registration.timeSlotId);
       }
     }
   }
 
-  async promoteFromWaitlist(eventId: string, timeSlotId: string): Promise<void> {
-    // Find the oldest waitlist registration for this time slot
-    const [waitlistRegistration] = await db
+  async notifyWaitlist(eventId: string, timeSlotId: string): Promise<void> {
+    // Find all waitlist registrations for this time slot
+    const waitlistRegistrations = await db
       .select()
       .from(registrations)
       .where(and(
@@ -306,20 +318,9 @@ export class DatabaseStorage implements IStorage {
         eq(registrations.timeSlotId, timeSlotId),
         eq(registrations.status, 'waitlist')
       ))
-      .orderBy(asc(registrations.createdAt))
-      .limit(1);
+      .orderBy(asc(registrations.createdAt));
     
-    if (waitlistRegistration) {
-      // Update status to confirmed
-      await db
-        .update(registrations)
-        .set({
-          status: 'confirmed',
-          updatedAt: new Date()
-        })
-        .where(eq(registrations.id, waitlistRegistration.id));
-      
-      // Send promotion notification email
+    if (waitlistRegistrations.length > 0) {
       try {
         const event = await this.getEvent(eventId);
         const timeSlot = await db
@@ -329,7 +330,7 @@ export class DatabaseStorage implements IStorage {
           .limit(1);
         
         if (event && timeSlot[0]) {
-          const { sendWaitlistPromotionEmail } = await import('./lib/sendgrid');
+          const { sendSlotAvailableEmail } = await import('./lib/sendgrid');
           
           // Format date and time for email
           const eventDate = new Date(timeSlot[0].startTime).toLocaleDateString('en-US', {
@@ -351,19 +352,24 @@ export class DatabaseStorage implements IStorage {
             hour12: true
           });
           
-          await sendWaitlistPromotionEmail({
-            name: waitlistRegistration.name,
-            email: waitlistRegistration.email,
-            eventTitle: event.title,
-            eventDate: eventDate,
-            eventTime: `${startTime} - ${endTime}`,
-            eventLocation: event.location,
-            cancelUrl: `${process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS}` : 'http://localhost:5000'}/cancel/${waitlistRegistration.uniqueCancelToken}`
-          });
+          // Notify all waitlist members
+          for (const waitlistRegistration of waitlistRegistrations) {
+            await sendSlotAvailableEmail({
+              name: waitlistRegistration.name,
+              email: waitlistRegistration.email,
+              eventTitle: event.title,
+              eventDate: eventDate,
+              eventTime: `${startTime} - ${endTime}`,
+              eventLocation: event.laundromatName ? 
+                `${event.laundromatName}${event.laundromatAddress ? ', ' + event.laundromatAddress : ''}` : 
+                event.location,
+              signUpUrl: `${process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS}` : 'http://localhost:5000'}/register?event=${eventId}&timeSlot=${timeSlotId}`,
+              removeFromWaitlistUrl: `${process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS}` : 'http://localhost:5000'}/cancel/${waitlistRegistration.uniqueCancelToken}`
+            });
+          }
         }
       } catch (emailError) {
-        console.error("Error sending waitlist promotion email:", emailError);
-        // Don't fail the promotion if email fails
+        console.error("Error sending waitlist notification emails:", emailError);
       }
     }
   }

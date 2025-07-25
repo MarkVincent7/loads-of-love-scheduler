@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { type TimeSlot, type Event } from "@shared/schema";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useLocation } from "wouter";
+import WaitlistForm from "./waitlist-form";
 
 interface TimeSlotCardProps {
   timeSlot: TimeSlot & { registrationCount: number; waitlistCount: number };
@@ -10,12 +12,17 @@ interface TimeSlotCardProps {
 
 export default function TimeSlotCard({ timeSlot, event }: TimeSlotCardProps) {
   const [, setLocation] = useLocation();
+  const [showWaitlistForm, setShowWaitlistForm] = useState(false);
   const availableSpots = timeSlot.capacity - timeSlot.registrationCount;
   const isFull = availableSpots <= 0;
 
   const handleClick = () => {
-    // Navigate to registration page with time slot and event IDs
-    setLocation(`/register?event=${event.id}&timeSlot=${timeSlot.id}`);
+    if (isFull) {
+      setShowWaitlistForm(true);
+    } else {
+      // Navigate to registration page with time slot and event IDs
+      setLocation(`/register?event=${event.id}&timeSlot=${timeSlot.id}`);
+    }
   };
 
   return (
@@ -114,6 +121,13 @@ export default function TimeSlotCard({ timeSlot, event }: TimeSlotCardProps) {
           )}
         </div>
       </div>
+      
+      <WaitlistForm
+        event={event}
+        timeSlot={timeSlot}
+        open={showWaitlistForm}
+        onClose={() => setShowWaitlistForm(false)}
+      />
     </div>
   );
 }

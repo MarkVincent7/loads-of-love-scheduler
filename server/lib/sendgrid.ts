@@ -193,6 +193,179 @@ export async function sendConfirmationEmail(details: {
   }
 }
 
+export async function sendSlotAvailableEmail(details: {
+  name: string;
+  email: string;
+  eventTitle: string;
+  eventDate: string;
+  eventTime: string;
+  eventLocation: string;
+  signUpUrl: string;
+  removeFromWaitlistUrl: string;
+}) {
+  const emailData = {
+    to: details.email,
+    subject: "Slot Available! Act Fast - Christ's Loving Hands",
+    html: `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <title>Slot Available</title>
+        <style>
+          body { 
+            font-family: Arial, sans-serif; 
+            line-height: 1.6; 
+            color: #333; 
+            margin: 0; 
+            padding: 0; 
+          }
+          .container { 
+            max-width: 600px; 
+            margin: 0 auto; 
+            padding: 20px; 
+            background-color: #f8fafc; 
+          }
+          .header { 
+            background: #16a34a; 
+            color: white; 
+            padding: 30px 20px; 
+            text-align: center; 
+            border-radius: 8px 8px 0 0; 
+          }
+          .content { 
+            background: white; 
+            padding: 30px; 
+            border-radius: 0 0 8px 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+          }
+          .details {
+            background: #f1f5f9;
+            padding: 20px;
+            border-radius: 6px;
+            margin: 20px 0;
+          }
+          .signup-link {
+            display: inline-block;
+            background: #16a34a;
+            color: white;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-size: 18px;
+            font-weight: bold;
+          }
+          .remove-link {
+            display: inline-block;
+            background: #dc2626;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 6px;
+            margin-top: 20px;
+            font-size: 14px;
+          }
+          .footer {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 14px;
+            color: #666;
+          }
+          .urgent {
+            background: #fef3c7;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #f59e0b;
+            margin: 20px 0;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>🎉 A Slot Opened Up!</h1>
+            <p>Christ's Loving Hands - Loads of Love</p>
+          </div>
+          <div class="content">
+            <p>Hi ${details.name},</p>
+            
+            <div class="urgent">
+              <p><strong>Great news!</strong> A spot has opened up for the time slot you were waiting for. Click below to secure your spot!</p>
+            </div>
+            
+            <div class="details">
+              <h3>Available Time Slot:</h3>
+              <p><strong>Event:</strong> ${details.eventTitle}</p>
+              <p><strong>Date:</strong> ${details.eventDate}</p>
+              <p><strong>Time:</strong> ${details.eventTime}</p>
+              <p><strong>Location:</strong> ${details.eventLocation}</p>
+            </div>
+            
+            <div style="text-align: center;">
+              <a href="${details.signUpUrl}" class="signup-link">SIGN UP NOW</a>
+            </div>
+            
+            <p><strong>Important:</strong> This slot is available on a first-come, first-served basis. Other people on the waitlist are also being notified, so please sign up quickly if you still want this appointment.</p>
+            
+            <p><strong>What to bring:</strong></p>
+            <ul>
+              <li>Your laundry (we provide detergent and fabric softener)</li>
+              <li>Please arrive on time to ensure your slot</li>
+            </ul>
+            
+            <p>If you no longer need this appointment, please remove yourself from the waitlist:</p>
+            <a href="${details.removeFromWaitlistUrl}" class="remove-link">Remove from Waitlist</a>
+            
+            <div class="footer">
+              <p>Thank you for your patience!</p>
+              <p>Christ's Loving Hands</p>
+            </div>
+          </div>
+        </div>
+      </body>
+      </html>
+    `,
+    text: `
+      Hi ${details.name},
+
+      Great news! A spot has opened up for the time slot you were waiting for.
+
+      Available Time Slot:
+      Event: ${details.eventTitle}
+      Date: ${details.eventDate}
+      Time: ${details.eventTime}
+      Location: ${details.eventLocation}
+
+      SIGN UP NOW: ${details.signUpUrl}
+
+      Important: This slot is available on a first-come, first-served basis. Other people on the waitlist are also being notified, so please sign up quickly if you still want this appointment.
+
+      What to bring:
+      - Your laundry (we provide detergent and fabric softener)
+      - Please arrive on time to ensure your slot
+
+      If you no longer need this appointment, remove yourself from waitlist: ${details.removeFromWaitlistUrl}
+
+      Thank you for your patience!
+      Christ's Loving Hands
+    `
+  };
+
+  try {
+    const success = await sendEmail(emailData);
+    if (success) {
+      console.log(`✓ Slot available email sent to ${details.email}`);
+    } else {
+      console.error(`Failed to send slot available email to ${details.email}`);
+    }
+    return success;
+  } catch (error) {
+    console.error("Failed to send slot available email:", error);
+    return false;
+  }
+}
+
 export async function sendWaitlistPromotionEmail(details: {
   name: string;
   email: string;

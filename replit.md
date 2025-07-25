@@ -38,6 +38,12 @@ Preferred communication style: Simple, everyday language.
 - Updated time slot cards to display detailed laundromat information (name, address) when available
 - Enhanced registration success page to properly handle waitlist vs confirmed status with color-coded indicators
 - Updated database schema with laundromat_name and laundromat_address columns for detailed location information
+- Redesigned waitlist system from automatic promotion to notification-based approach
+- Simplified waitlist registration to collect only name and email (no full address details required)
+- Created dedicated waitlist form component with streamlined user experience
+- Added slot availability notification emails that link users to complete registration
+- Updated time slot cards to open waitlist dialog instead of redirecting to full registration form
+- Modified backend to notify all waitlist members when slots become available (no automatic promotion)
 
 **July 24, 2025**
 - Fixed registration display issue in admin dashboard

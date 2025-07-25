@@ -36,11 +36,11 @@ export const registrations = pgTable("registrations", {
   timeSlotId: uuid("time_slot_id").notNull().references(() => timeSlots.id, { onDelete: 'cascade' }),
   name: text("name").notNull(),
   email: text("email").notNull(),
-  phone: text("phone").notNull(),
-  address: text("address").notNull(),
-  city: text("city").notNull(),
-  state: text("state").notNull(),
-  zipCode: text("zip_code").notNull(),
+  phone: text("phone"),
+  address: text("address"),
+  city: text("city"),
+  state: text("state"),
+  zipCode: text("zip_code"),
   status: registrationStatusEnum("status").notNull().default('confirmed'),
   uniqueCancelToken: uuid("unique_cancel_token").notNull().defaultRandom(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
@@ -119,11 +119,18 @@ export const insertRegistrationSchema = createInsertSchema(registrations).omit({
 }).extend({
   name: z.string().min(1, "Name is required"),
   email: z.string().email("Valid email is required"),
-  phone: z.string().min(10, "Valid phone number is required"),
-  address: z.string().min(1, "Address is required"),
-  city: z.string().min(1, "City is required"),
-  state: z.string().min(1, "State is required"),
-  zipCode: z.string().min(5, "Valid zip code is required"),
+  phone: z.string().min(10, "Valid phone number is required").optional(),
+  address: z.string().min(1, "Address is required").optional(),
+  city: z.string().min(1, "City is required").optional(),
+  state: z.string().min(1, "State is required").optional(),
+  zipCode: z.string().min(5, "Valid zip code is required").optional(),
+});
+
+export const insertWaitlistSchema = z.object({
+  eventId: z.string(),
+  timeSlotId: z.string(),
+  name: z.string().min(1, "Name is required"),
+  email: z.string().email("Valid email is required"),
 });
 
 export const insertBlacklistSchema = createInsertSchema(blacklist).omit({

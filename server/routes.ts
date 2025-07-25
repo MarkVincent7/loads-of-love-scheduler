@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { z } from "zod";
-import { insertRegistrationSchema, insertEventSchema, insertTimeSlotSchema, insertBlacklistSchema } from "@shared/schema";
+import { insertRegistrationSchema, insertWaitlistSchema, insertEventSchema, insertTimeSlotSchema, insertBlacklistSchema } from "@shared/schema";
 import { authMiddleware } from "./middleware/auth";
 import { generateAuthToken, verifyPassword, hashPassword } from "./lib/auth";
 import { checkBlacklistMiddleware } from "./lib/blacklist";
@@ -49,7 +49,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Check for duplicate registration
       const isDuplicate = await storage.checkDuplicateRegistration(
         validatedData.email, 
-        validatedData.phone, 
+        validatedData.phone || '', 
         validatedData.eventId
       );
       
@@ -154,6 +154,91 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to create registration" });
     }
   });
+
+  // Join waitlist (simplified registration)
+  app.post("/api/waitlist", async (req, res) => {
+    try {
+      const validatedData = insertWaitlistSchema.parse(req.body);
+      
+      // Check for duplicate registration
+      const isDuplicate = await storage.checkDuplicateRegistration(
+        validatedData.email, 
+        '', 
+        validatedData.eventId
+      );
+      
+      if (isDuplicate) {
+        return res.status(400).json({ 
+          message: "You are already registered for this event" 
+        });
+      }
+      
+      // Create waitlist registration with only name and email
+      const registration = await storage.createRegistration({
+        ...validatedData,
+        status: 'waitlist'
+      });
+      
+      // Send waitlist confirmation email
+      try {
+        const event = await storage.getEvent(validatedData.eventId);
+        const timeSlots = await storage.getTimeSlotsByEvent(validatedData.eventId);
+        const targetSlot = timeSlots.find(slot => slot.id === validatedData.timeSlotId);
+        
+        if (event && targetSlot) {
+          const { sendWaitlistConfirmationEmail } = await import('./lib/sendgrid');
+          
+          // Format date and time for email
+          const eventDate = new Date(targetSlot.startTime).toLocaleDateString('en-US', {
+            weekday: 'long',
+            year: 'numeric', 
+            month: 'long',
+            day: 'numeric'
+          });
+          
+          const startTime = new Date(targetSlot.startTime).toLocaleTimeString('en-US', {
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true
+          });
+          
+          const endTime = new Date(targetSlot.endTime).toLocaleTimeString('en-US', {
+            hour: 'numeric',
+            minute: '2-digit', 
+            hour12: true
+          });
+          
+          await sendWaitlistConfirmationEmail({
+            name: validatedData.name,
+            email: validatedData.email,
+            eventTitle: event.title,
+            eventDate: eventDate,
+            eventTime: `${startTime} - ${endTime}`,
+            eventLocation: event.laundromatName ? 
+              `${event.laundromatName}${event.laundromatAddress ? ', ' + event.laundromatAddress : ''}` : 
+              event.location,
+            cancelUrl: `${process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS}` : 'http://localhost:5000'}/cancel/${registration.uniqueCancelToken}`
+          });
+          
+          console.log(`✓ Waitlist confirmation email sent to ${validatedData.email}`);
+        }
+      } catch (emailError) {
+        console.error("Error sending waitlist confirmation email:", emailError);
+        // Don't fail the registration if email fails
+      }
+      
+      res.status(201).json({ registration, message: 'Added to waitlist - you will be notified if a spot opens' });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          message: "Invalid waitlist data",
+          errors: error.errors 
+        });
+      }
+      console.error("Error adding to waitlist:", error);
+      res.status(500).json({ message: "Failed to add to waitlist" });
+    }
+  });
   
   // Cancel registration using unique token
   app.post("/api/cancel/:token", async (req, res) => {
@@ -172,9 +257,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const wasConfirmed = registration.status === 'confirmed';
       await storage.cancelRegistration(token);
       
-      // Promote waitlist if this was a confirmed registration
+      // Notify waitlist if this was a confirmed registration
       if (wasConfirmed) {
-        await storage.promoteFromWaitlist(registration.eventId, registration.timeSlotId);
+        await storage.notifyWaitlist(registration.eventId, registration.timeSlotId);
       }
       
       res.json({ message: "Registration cancelled successfully" });
