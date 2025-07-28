@@ -66,6 +66,8 @@ Preferred communication style: Simple, everyday language.
 - Events automatically transition to past events after all time slots conclude
 - Modified duplicate registration logic to allow multiple registrations from same browser with different personal information
 - Duplicate check now requires exact match of both email AND phone (full registrations) or just email (waitlist only)
+- Fixed email reminder timezone issue where times were displayed in server timezone instead of Eastern Time
+- Updated scheduler to use proper Eastern Time formatting for all reminder emails
 
 **July 24, 2025**
 - Fixed registration display issue in admin dashboard

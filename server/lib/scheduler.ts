@@ -1,5 +1,6 @@
 import { storage } from "../storage";
 import { sendReminderEmail } from "./sendgrid";
+import { formatEmailDate, formatEmailTime } from "../../shared/timezone";
 import type { RegistrationWithDetails } from "@shared/schema";
 
 // Run scheduler every hour
@@ -65,25 +66,10 @@ class EmailScheduler {
         return;
       }
 
-      // Format date and time for email
-      const eventDate = new Date(registration.timeSlot.startTime).toLocaleDateString('en-US', {
-        weekday: 'long',
-        year: 'numeric', 
-        month: 'long',
-        day: 'numeric'
-      });
-      
-      const startTime = new Date(registration.timeSlot.startTime).toLocaleTimeString('en-US', {
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: true
-      });
-      
-      const endTime = new Date(registration.timeSlot.endTime).toLocaleTimeString('en-US', {
-        hour: 'numeric',
-        minute: '2-digit', 
-        hour12: true
-      });
+      // Format date and time for email in Eastern Time
+      const eventDate = formatEmailDate(registration.timeSlot.startTime);
+      const startTime = formatEmailTime(registration.timeSlot.startTime);
+      const endTime = formatEmailTime(registration.timeSlot.endTime);
 
       await sendReminderEmail({
         name: registration.name,
@@ -111,25 +97,10 @@ class EmailScheduler {
         return;
       }
 
-      // Format date and time for email
-      const eventDate = new Date(registration.timeSlot.startTime).toLocaleDateString('en-US', {
-        weekday: 'long',
-        year: 'numeric', 
-        month: 'long',
-        day: 'numeric'
-      });
-      
-      const startTime = new Date(registration.timeSlot.startTime).toLocaleTimeString('en-US', {
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: true
-      });
-      
-      const endTime = new Date(registration.timeSlot.endTime).toLocaleTimeString('en-US', {
-        hour: 'numeric',
-        minute: '2-digit', 
-        hour12: true
-      });
+      // Format date and time for email in Eastern Time
+      const eventDate = formatEmailDate(registration.timeSlot.startTime);
+      const startTime = formatEmailTime(registration.timeSlot.startTime);
+      const endTime = formatEmailTime(registration.timeSlot.endTime);
 
       await sendReminderEmail({
         name: registration.name,
