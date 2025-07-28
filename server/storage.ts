@@ -383,15 +383,31 @@ export class DatabaseStorage implements IStorage {
   }
 
   async checkDuplicateRegistration(email: string, phone: string, eventId: string): Promise<boolean> {
-    const [existing] = await db
-      .select()
-      .from(registrations)
-      .where(and(
-        eq(registrations.eventId, eventId),
-        sql`(${registrations.email} = ${email} OR ${registrations.phone} = ${phone})`,
-        sql`${registrations.status} IN ('confirmed', 'waitlist')`
-      ));
-    return !!existing;
+    // If phone is provided, check for exact match of both email AND phone (indicating truly the same person)
+    // If phone is empty/not provided, only check email (for waitlist registrations)
+    if (phone && phone.trim() !== '') {
+      const [existing] = await db
+        .select()
+        .from(registrations)
+        .where(and(
+          eq(registrations.eventId, eventId),
+          eq(registrations.email, email),
+          eq(registrations.phone, phone),
+          sql`${registrations.status} IN ('confirmed', 'waitlist')`
+        ));
+      return !!existing;
+    } else {
+      // For waitlist-only registrations, just check email
+      const [existing] = await db
+        .select()
+        .from(registrations)
+        .where(and(
+          eq(registrations.eventId, eventId),
+          eq(registrations.email, email),
+          sql`${registrations.status} IN ('confirmed', 'waitlist')`
+        ));
+      return !!existing;
+    }
   }
 
   async addToBlacklist(blacklistItem: InsertBlacklist): Promise<Blacklist> {

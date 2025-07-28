@@ -502,7 +502,7 @@ export default function AdminRegistrations() {
                                         {event.timeSlots.length} time slot{event.timeSlots.length !== 1 ? 's' : ''}
                                       </span>
                                       <span className="text-sm text-gray-600 flex items-center">
-                                        <Users className="w-4 h-4 mr-1" />
+                                        <User className="w-4 h-4 mr-1" />
                                         {eventRegistrations} registered
                                       </span>
                                     </div>

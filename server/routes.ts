@@ -167,10 +167,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const validatedData = insertWaitlistSchema.parse(req.body);
       
-      // Check for duplicate registration
+      // Check for duplicate registration (for waitlist, only email is provided)
       const isDuplicate = await storage.checkDuplicateRegistration(
         validatedData.email, 
-        '', 
+        '', // No phone provided for waitlist registrations
         validatedData.eventId
       );
       

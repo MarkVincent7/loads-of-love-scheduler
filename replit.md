@@ -62,6 +62,10 @@ Preferred communication style: Simple, everyday language.
 - Enhanced confirmation emails to specify "3 loads of laundry for free" service offering
 - Added duplicate cancel buttons at top and bottom of emails for better accessibility
 - Added rich links to registration dashboard contact information for direct email and phone actions
+- Added tabs to registration management: "Upcoming Events" and "Past Events" for better organization
+- Events automatically transition to past events after all time slots conclude
+- Modified duplicate registration logic to allow multiple registrations from same browser with different personal information
+- Duplicate check now requires exact match of both email AND phone (full registrations) or just email (waitlist only)
 
 **July 24, 2025**
 - Fixed registration display issue in admin dashboard
