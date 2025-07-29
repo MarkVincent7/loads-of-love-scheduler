@@ -324,6 +324,42 @@ export default function AdminRegistrations() {
       const printWindow = window.open('', '_blank');
       if (!printWindow) return;
 
+      // Format dates using native JavaScript to avoid dependency issues in print window
+      const formatEventDate = (dateStr: string) => {
+        const date = new Date(dateStr);
+        return date.toLocaleDateString('en-US', {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long', 
+          day: 'numeric'
+        });
+      };
+      
+      const formatSignupTime = (dateStr: string) => {
+        const date = new Date(dateStr);
+        return date.toLocaleDateString('en-US', { 
+          month: 'short', 
+          day: 'numeric' 
+        }) + ', ' + date.toLocaleTimeString('en-US', {
+          hour: 'numeric',
+          minute: '2-digit',
+          hour12: true
+        });
+      };
+      
+      const formatReportTime = () => {
+        const now = new Date();
+        return now.toLocaleDateString('en-US', {
+          month: 'long',
+          day: 'numeric', 
+          year: 'numeric'
+        }) + ' at ' + now.toLocaleTimeString('en-US', {
+          hour: 'numeric',
+          minute: '2-digit',
+          hour12: true
+        });
+      };
+
       const printContent = `
         <!DOCTYPE html>
         <html>
@@ -420,7 +456,7 @@ export default function AdminRegistrations() {
           <div class="event-header">
             <div class="event-title">${event.title}</div>
             <div class="event-details">
-              <strong>Date:</strong> ${format(new Date(event.date), 'EEEE, MMMM d, yyyy')}<br>
+              <strong>Date:</strong> ${formatEventDate(event.date)}<br>
               <strong>Location:</strong> ${event.laundromatName || event.location}
               ${event.laundromatAddress ? `<br><strong>Address:</strong> ${event.laundromatAddress}` : ''}
             </div>
@@ -443,7 +479,7 @@ export default function AdminRegistrations() {
                   <td>${reg.email}</td>
                   <td>${reg.phone}</td>
                   <td>${reg.address}, ${reg.city}, ${reg.state} ${reg.zipCode}</td>
-                  <td class="signup-time">${format(new Date(reg.createdAt), 'MMM d, h:mm a')}</td>
+                  <td class="signup-time">${formatSignupTime(reg.createdAt)}</td>
                 </tr>
               `).join('')}
             </tbody>
@@ -454,7 +490,7 @@ export default function AdminRegistrations() {
           </div>
           
           <div class="print-date">
-            Report generated on ${format(new Date(), 'MMMM d, yyyy \'at\' h:mm a')}
+            Report generated on ${formatReportTime()}
           </div>
         </body>
         </html>
