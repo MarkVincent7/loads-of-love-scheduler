@@ -68,6 +68,9 @@ Preferred communication style: Simple, everyday language.
 - Duplicate check now requires exact match of both email AND phone (full registrations) or just email (waitlist only)
 - Fixed email reminder timezone issue where times were displayed in server timezone instead of Eastern Time
 - Updated scheduler to use proper Eastern Time formatting for all reminder emails
+- Added print functionality to registration dashboard for confirmed registrations
+- Print feature generates professionally formatted reports organized by event and time slot
+- Print reports include full contact details and location information for easy reference
 
 **July 24, 2025**
 - Fixed registration display issue in admin dashboard
