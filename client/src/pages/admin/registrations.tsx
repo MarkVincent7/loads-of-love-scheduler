@@ -299,239 +299,186 @@ export default function AdminRegistrations() {
     }
   };
 
-  const handlePrintRegistrations = async () => {
-    // Get all confirmed registrations from all events
-    const allConfirmedRegistrations: any[] = [];
-    
-    // We need to fetch registrations for each event since the current hook only gets one event
-    for (const event of events) {
-      try {
-        const response = await fetch(`/api/events/${event.id}/registrations`);
-        if (response.ok) {
-          const eventRegistrations = await response.json();
-          
-          event.timeSlots.forEach(timeSlot => {
-            const timeSlotRegistrations = eventRegistrations.filter((reg: any) => 
-              reg.timeSlotId === timeSlot.id && reg.status === 'confirmed'
-            );
-            
-            timeSlotRegistrations.forEach((registration: any) => {
-              allConfirmedRegistrations.push({
-                ...registration,
-                eventTitle: event.title,
-                eventDate: event.date,
-                eventLocation: event.location,
-                timeSlotStart: timeSlot.startTime,
-                timeSlotEnd: timeSlot.endTime,
-                laundromat_name: event.laundromat_name,
-                laundromat_address: event.laundromat_address
-              });
-            });
-          });
-        }
-      } catch (error) {
-        console.error(`Failed to fetch registrations for event ${event.id}:`, error);
+  const handlePrintEventRegistrations = async (event: any) => {
+    try {
+      // Fetch registrations for this specific event
+      const response = await fetch(`/api/events/${event.id}/registrations`);
+      if (!response.ok) {
+        console.error(`Failed to fetch registrations for event ${event.id}`);
+        return;
       }
-    }
 
-    // Sort by event date and time
-    allConfirmedRegistrations.sort((a, b) => {
-      const dateA = new Date(a.eventDate);
-      const dateB = new Date(b.eventDate);
-      if (dateA.getTime() !== dateB.getTime()) {
-        return dateA.getTime() - dateB.getTime();
+      const eventRegistrations = await response.json();
+      
+      // Get all confirmed registrations for this event, sorted by signup time
+      const confirmedRegistrations = eventRegistrations
+        .filter((reg: any) => reg.status === 'confirmed')
+        .sort((a: any, b: any) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+
+      if (confirmedRegistrations.length === 0) {
+        alert('No confirmed registrations found for this event.');
+        return;
       }
-      return new Date(a.timeSlotStart).getTime() - new Date(b.timeSlotStart).getTime();
-    });
 
-    // Create print window with formatted content
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) return;
+      // Create print window with formatted content
+      const printWindow = window.open('', '_blank');
+      if (!printWindow) return;
 
-    const printContent = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <title>Confirmed Registrations - Christ's Loving Hands</title>
-        <style>
-          body { 
-            font-family: Arial, sans-serif; 
-            margin: 20px; 
-            color: #333;
-            line-height: 1.4;
-          }
-          h1 { 
-            text-align: center; 
-            color: #059669; 
-            margin-bottom: 10px;
-            font-size: 24px;
-          }
-          .subtitle {
-            text-align: center;
-            color: #666;
-            margin-bottom: 30px;
-            font-size: 16px;
-          }
-          .event-section {
-            margin-bottom: 40px;
-            border-bottom: 2px solid #e5e7eb;
-            padding-bottom: 20px;
-          }
-          .event-section:last-child {
-            border-bottom: none;
-          }
-          .event-header {
-            background: #f3f4f6;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            border-left: 4px solid #059669;
-          }
-          .event-title {
-            font-size: 18px;
-            font-weight: bold;
-            color: #111827;
-            margin-bottom: 5px;
-          }
-          .event-details {
-            font-size: 14px;
-            color: #6b7280;
-          }
-          table { 
-            width: 100%; 
-            border-collapse: collapse; 
-            margin-bottom: 20px;
-            font-size: 12px;
-          }
-          th, td { 
-            border: 1px solid #d1d5db; 
-            padding: 8px; 
-            text-align: left; 
-          }
-          th { 
-            background-color: #f9fafb; 
-            font-weight: bold;
-            color: #374151;
-          }
-          tr:nth-child(even) {
-            background-color: #f9fafb;
-          }
-          .time-slot-header {
-            background: #e5e7eb;
-            font-weight: bold;
-            text-align: center;
-            color: #374151;
-          }
-          .print-date {
-            text-align: center;
-            color: #9ca3af;
-            font-size: 12px;
-            margin-top: 30px;
-            border-top: 1px solid #e5e7eb;
-            padding-top: 10px;
-          }
-          @media print {
-            body { margin: 0; }
-            .event-section { page-break-inside: avoid; }
-          }
-        </style>
-      </head>
-      <body>
-        <h1>Christ's Loving Hands - Loads of Love</h1>
-        <div class="subtitle">Confirmed Registrations Report</div>
-        
-        ${allConfirmedRegistrations.length === 0 ? `
-          <div style="text-align: center; color: #6b7280; margin-top: 50px;">
-            <p>No confirmed registrations found.</p>
-          </div>
-        ` : (() => {
-          // Group registrations by event and time slot
-          const groupedRegistrations: { [key: string]: any[] } = {};
-          
-          allConfirmedRegistrations.forEach(reg => {
-            const key = `${reg.eventTitle}-${reg.eventDate}-${reg.timeSlotStart}`;
-            if (!groupedRegistrations[key]) {
-              groupedRegistrations[key] = [];
+      const printContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>${event.title} - Confirmed Registrations</title>
+          <style>
+            body { 
+              font-family: Arial, sans-serif; 
+              margin: 20px; 
+              color: #333;
+              line-height: 1.4;
             }
-            groupedRegistrations[key].push(reg);
-          });
+            h1 { 
+              text-align: center; 
+              color: #059669; 
+              margin-bottom: 10px;
+              font-size: 24px;
+            }
+            .subtitle {
+              text-align: center;
+              color: #666;
+              margin-bottom: 30px;
+              font-size: 16px;
+            }
+            .event-header {
+              background: #f3f4f6;
+              padding: 20px;
+              border-radius: 8px;
+              margin-bottom: 30px;
+              border-left: 4px solid #059669;
+              text-align: center;
+            }
+            .event-title {
+              font-size: 20px;
+              font-weight: bold;
+              color: #111827;
+              margin-bottom: 10px;
+            }
+            .event-details {
+              font-size: 16px;
+              color: #6b7280;
+            }
+            table { 
+              width: 100%; 
+              border-collapse: collapse; 
+              margin-bottom: 30px;
+              font-size: 12px;
+            }
+            th, td { 
+              border: 1px solid #d1d5db; 
+              padding: 10px; 
+              text-align: left; 
+            }
+            th { 
+              background-color: #f9fafb; 
+              font-weight: bold;
+              color: #374151;
+            }
+            tr:nth-child(even) {
+              background-color: #f9fafb;
+            }
+            .signup-time {
+              font-size: 11px;
+              color: #9ca3af;
+            }
+            .total-count {
+              text-align: center;
+              font-size: 16px;
+              font-weight: bold;
+              color: #059669;
+              margin: 20px 0;
+              padding: 15px;
+              background: #f0f9f5;
+              border-radius: 8px;
+            }
+            .print-date {
+              text-align: center;
+              color: #9ca3af;
+              font-size: 12px;
+              margin-top: 40px;
+              border-top: 1px solid #e5e7eb;
+              padding-top: 15px;
+            }
+            @media print {
+              body { margin: 0; }
+              table { page-break-inside: avoid; }
+            }
+          </style>
+        </head>
+        <body>
+          <h1>Christ's Loving Hands - Loads of Love</h1>
+          <div class="subtitle">Confirmed Registrations</div>
+          
+          <div class="event-header">
+            <div class="event-title">${event.title}</div>
+            <div class="event-details">
+              <strong>Date:</strong> ${format(new Date(event.date), 'EEEE, MMMM d, yyyy')}<br>
+              <strong>Location:</strong> ${event.laundromatName || event.location}
+              ${event.laundromatAddress ? `<br><strong>Address:</strong> ${event.laundromatAddress}` : ''}
+            </div>
+          </div>
+          
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 20%;">Name</th>
+                <th style="width: 25%;">Email</th>
+                <th style="width: 15%;">Phone</th>
+                <th style="width: 25%;">Address</th>
+                <th style="width: 15%;">Signup Time</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${confirmedRegistrations.map((reg: any) => `
+                <tr>
+                  <td><strong>${reg.name}</strong></td>
+                  <td>${reg.email}</td>
+                  <td>${reg.phone}</td>
+                  <td>${reg.address}, ${reg.city}, ${reg.state} ${reg.zipCode}</td>
+                  <td class="signup-time">${format(new Date(reg.createdAt), 'MMM d, h:mm a')}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+          
+          <div class="total-count">
+            Total Confirmed Registrations: ${confirmedRegistrations.length}
+          </div>
+          
+          <div class="print-date">
+            Report generated on ${format(new Date(), 'MMMM d, yyyy \'at\' h:mm a')}
+          </div>
+        </body>
+        </html>
+      `;
 
-          return Object.keys(groupedRegistrations).map(key => {
-            const regs = groupedRegistrations[key];
-            const firstReg = regs[0];
-            
-            return `
-              <div class="event-section">
-                <div class="event-header">
-                  <div class="event-title">${firstReg.eventTitle}</div>
-                  <div class="event-details">
-                    <strong>Date:</strong> ${format(new Date(firstReg.eventDate), 'EEEE, MMMM d, yyyy')} | 
-                    <strong>Time:</strong> ${format(new Date(firstReg.timeSlotStart), 'h:mm a')} - ${format(new Date(firstReg.timeSlotEnd), 'h:mm a')} | 
-                    <strong>Location:</strong> ${firstReg.laundromat_name || firstReg.eventLocation}
-                    ${firstReg.laundromat_address ? `<br><strong>Address:</strong> ${firstReg.laundromat_address}` : ''}
-                  </div>
-                </div>
-                
-                <table>
-                  <thead>
-                    <tr>
-                      <th style="width: 25%;">Name</th>
-                      <th style="width: 30%;">Email</th>
-                      <th style="width: 20%;">Phone</th>
-                      <th style="width: 25%;">Address</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    ${regs.map(reg => `
-                      <tr>
-                        <td>${reg.name}</td>
-                        <td>${reg.email}</td>
-                        <td>${reg.phone}</td>
-                        <td>${reg.address}, ${reg.city}, ${reg.state} ${reg.zipCode}</td>
-                      </tr>
-                    `).join('')}
-                  </tbody>
-                </table>
-                
-                <div style="text-align: right; font-size: 12px; color: #6b7280; margin-top: 10px;">
-                  <strong>Total Confirmed: ${regs.length}</strong>
-                </div>
-              </div>
-            `;
-          }).join('');
-        })()}
-        
-        <div class="print-date">
-          Generated on ${format(new Date(), 'MMMM d, yyyy \'at\' h:mm a')}
-        </div>
-      </body>
-      </html>
-    `;
-
-    printWindow.document.write(printContent);
-    printWindow.document.close();
-    
-    // Auto-print after a short delay to ensure content is loaded
-    setTimeout(() => {
-      printWindow.print();
-    }, 500);
+      printWindow.document.write(printContent);
+      printWindow.document.close();
+      
+      // Auto-print after a short delay to ensure content is loaded
+      setTimeout(() => {
+        printWindow.print();
+      }, 500);
+    } catch (error) {
+      console.error('Error generating print report:', error);
+      alert('Failed to generate print report. Please try again.');
+    }
   };
 
   return (
     <AdminLayout>
       <div className="space-y-6">
-        <div className="flex justify-between items-start">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Registration Management</h1>
-            <p className="text-gray-600">View event registrations organized by date and manage attendance</p>
-          </div>
-          <Button 
-            onClick={handlePrintRegistrations}
-            className="bg-emerald-600 hover:bg-emerald-700 text-white"
-          >
-            <Printer className="w-4 h-4 mr-2" />
-            Print Confirmed
-          </Button>
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Registration Management</h1>
+          <p className="text-gray-600">View event registrations organized by date and manage attendance</p>
         </div>
 
         {/* Filters */}
@@ -650,6 +597,18 @@ export default function AdminRegistrations() {
                         </div>
                         
                         <div className="flex items-center space-x-4">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handlePrintEventRegistrations(event);
+                            }}
+                            className="text-emerald-600 border-emerald-200 hover:bg-emerald-50"
+                          >
+                            <Printer className="w-4 h-4 mr-2" />
+                            Print
+                          </Button>
                           <div className="text-right">
                             <p className="font-medium text-gray-900">
                               {format(new Date(event.date), 'EEEE, MMMM d, yyyy')}
@@ -736,6 +695,18 @@ export default function AdminRegistrations() {
                                   </div>
                                 </div>
                                 <div className="flex items-center space-x-4">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handlePrintEventRegistrations(event);
+                                    }}
+                                    className="text-emerald-600 border-emerald-200 hover:bg-emerald-50"
+                                  >
+                                    <Printer className="w-4 h-4 mr-2" />
+                                    Print
+                                  </Button>
                                   <div className="text-right">
                                     <p className="font-medium text-gray-900">
                                       {format(new Date(event.date), 'EEEE, MMMM d, yyyy')}
