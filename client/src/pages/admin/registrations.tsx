@@ -250,14 +250,26 @@ export default function AdminRegistrations() {
   
   // Separate upcoming and past events
   const now = new Date();
+  console.log('Current time:', now.toISOString());
+  
   const upcomingEvents = sortedEvents.filter(event => {
     // Check if any time slot is still in the future
-    return event.timeSlots.some(slot => new Date(slot.endTime) > now);
+    const hasUpcomingSlots = event.timeSlots.some(slot => {
+      const endTime = new Date(slot.endTime);
+      console.log(`Event: ${event.title}, End time: ${endTime.toISOString()}, Is future: ${endTime > now}`);
+      return endTime > now;
+    });
+    return hasUpcomingSlots;
   });
   
   const pastEvents = sortedEvents.filter(event => {
     // All time slots have ended
-    return event.timeSlots.every(slot => new Date(slot.endTime) <= now);
+    const allSlotsEnded = event.timeSlots.every(slot => {
+      const endTime = new Date(slot.endTime);
+      return endTime <= now;
+    });
+    console.log(`Event: ${event.title}, All slots ended: ${allSlotsEnded}`);
+    return allSlotsEnded;
   });
 
   // Filter registrations based on search and status
