@@ -13,13 +13,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Public API Routes
   
-  // Get active events with availability
+  // Get active events with availability (public)
   app.get("/api/events", async (req, res) => {
     try {
       const events = await storage.getActiveEvents();
       res.json(events);
     } catch (error) {
       console.error("Error fetching events:", error);
+      res.status(500).json({ message: "Failed to fetch events" });
+    }
+  });
+
+  // Get all events including past ones (admin only)
+  app.get("/api/admin/events", authMiddleware, async (req, res) => {
+    try {
+      const events = await storage.getAllEvents();
+      res.json(events);
+    } catch (error) {
+      console.error("Error fetching all events:", error);
       res.status(500).json({ message: "Failed to fetch events" });
     }
   });

@@ -24,6 +24,7 @@ import { eq, and, gte, lte, desc, asc, count, sql } from "drizzle-orm";
 export interface IStorage {
   // Events
   getActiveEvents(): Promise<EventWithSlots[]>;
+  getAllEvents(): Promise<EventWithSlots[]>;
   getEvent(id: string): Promise<Event | undefined>;
   createEvent(event: InsertEvent): Promise<Event>;
   updateEvent(id: string, event: Partial<InsertEvent>): Promise<Event>;
@@ -106,6 +107,56 @@ export class DatabaseStorage implements IStorage {
         eq(registrations.status, 'confirmed')
       ))
       .where(gte(events.date, today))
+      .groupBy(events.id, timeSlots.id)
+      .orderBy(asc(events.date), asc(timeSlots.startTime));
+
+    // Group by event
+    const eventsMap = new Map<string, EventWithSlots>();
+    
+    for (const row of eventsWithSlots) {
+      const eventId = row.event.id;
+      
+      if (!eventsMap.has(eventId)) {
+        eventsMap.set(eventId, {
+          ...row.event,
+          timeSlots: []
+        });
+      }
+      
+      if (row.timeSlot) {
+        // Get waitlist count for this time slot
+        const waitlistResult = await db
+          .select({ count: count() })
+          .from(registrations)
+          .where(and(
+            eq(registrations.timeSlotId, row.timeSlot.id),
+            eq(registrations.status, 'waitlist')
+          ));
+        
+        eventsMap.get(eventId)!.timeSlots.push({
+          ...row.timeSlot,
+          registrationCount: row.registrationCount,
+          waitlistCount: waitlistResult[0]?.count || 0
+        });
+      }
+    }
+    
+    return Array.from(eventsMap.values());
+  }
+
+  async getAllEvents(): Promise<EventWithSlots[]> {
+    const eventsWithSlots = await db
+      .select({
+        event: events,
+        timeSlot: timeSlots,
+        registrationCount: count(registrations.id),
+      })
+      .from(events)
+      .innerJoin(timeSlots, eq(events.id, timeSlots.eventId))
+      .leftJoin(registrations, and(
+        eq(timeSlots.id, registrations.timeSlotId),
+        eq(registrations.status, 'confirmed')
+      ))
       .groupBy(events.id, timeSlots.id)
       .orderBy(asc(events.date), asc(timeSlots.startTime));
 

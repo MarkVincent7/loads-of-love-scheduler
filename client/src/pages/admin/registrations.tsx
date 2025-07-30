@@ -18,7 +18,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { format } from "date-fns";
 import { Search, Calendar, Clock, User, Phone, Mail, Trash2, UserX, ChevronDown, ChevronRight, Check, Printer } from "lucide-react";
-import type { Registration } from "@shared/schema";
+import { useQuery } from "@tanstack/react-query";
+import type { Registration, EventWithSlots } from "@shared/schema";
 
 interface EventRegistrationsTableProps {
   eventId: string;
@@ -227,7 +228,11 @@ export default function AdminRegistrations() {
   const [selectedRegistration, setSelectedRegistration] = useState<Registration | null>(null);
   const [expandedEvents, setExpandedEvents] = useState<Set<string>>(new Set());
 
-  const { data: events = [], isLoading: eventsLoading } = useEvents();
+  // Use admin endpoint to get all events including past ones
+  const { data: events = [], isLoading: eventsLoading } = useQuery<EventWithSlots[]>({
+    queryKey: ["/api/admin/events"],
+    refetchInterval: 30000,
+  });
   const { data: registrations = [], isLoading: registrationsLoading } = useRegistrations(selectedEventId);
   const markAsNoShowMutation = useMarkAsNoShow();
   const updateRegistrationMutation = useUpdateRegistration();
@@ -250,26 +255,15 @@ export default function AdminRegistrations() {
   
   // Separate upcoming and past events
   const now = new Date();
-  console.log('Current time:', now.toISOString());
   
   const upcomingEvents = sortedEvents.filter(event => {
     // Check if any time slot is still in the future
-    const hasUpcomingSlots = event.timeSlots.some(slot => {
-      const endTime = new Date(slot.endTime);
-      console.log(`Event: ${event.title}, End time: ${endTime.toISOString()}, Is future: ${endTime > now}`);
-      return endTime > now;
-    });
-    return hasUpcomingSlots;
+    return event.timeSlots.some(slot => new Date(slot.endTime) > now);
   });
   
   const pastEvents = sortedEvents.filter(event => {
     // All time slots have ended
-    const allSlotsEnded = event.timeSlots.every(slot => {
-      const endTime = new Date(slot.endTime);
-      return endTime <= now;
-    });
-    console.log(`Event: ${event.title}, All slots ended: ${allSlotsEnded}`);
-    return allSlotsEnded;
+    return event.timeSlots.every(slot => new Date(slot.endTime) <= now);
   });
 
   // Filter registrations based on search and status
