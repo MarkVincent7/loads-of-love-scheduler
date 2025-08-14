@@ -44,7 +44,7 @@ export async function sendNewRegistrationNotification(data: NotificationData) {
         <p><strong>Name:</strong> ${registration.name}</p>
         <p><strong>Email:</strong> ${registration.email}</p>
         ${registration.phone ? `<p><strong>Phone:</strong> ${registration.phone}</p>` : ''}
-        ${registration.address ? `<p><strong>Address:</strong> ${registration.address}</p>` : ''}
+        ${registration.address ? `<p><strong>Address:</strong> ${registration.address}${registration.city ? ', ' + registration.city : ''}${registration.state ? ', ' + registration.state : ''}${registration.zipCode ? ' ' + registration.zipCode : ''}</p>` : ''}
         <p><strong>Status:</strong> <span style="color: ${registration.status === 'confirmed' ? '#059669' : '#d97706'}; font-weight: bold;">${registration.status.toUpperCase()}</span></p>
       </div>
       
@@ -157,7 +157,7 @@ export async function sendWaitlistNotification(data: NotificationData) {
         <p><strong>Name:</strong> ${registration.name}</p>
         <p><strong>Email:</strong> ${registration.email}</p>
         ${registration.phone ? `<p><strong>Phone:</strong> ${registration.phone}</p>` : ''}
-        ${registration.address ? `<p><strong>Address:</strong> ${registration.address}</p>` : ''}
+        ${registration.address ? `<p><strong>Address:</strong> ${registration.address}${registration.city ? ', ' + registration.city : ''}${registration.state ? ', ' + registration.state : ''}${registration.zipCode ? ' ' + registration.zipCode : ''}</p>` : ''}
         <p><strong>Status:</strong> <span style="color: #d97706; font-weight: bold;">WAITLIST</span></p>
       </div>
       
