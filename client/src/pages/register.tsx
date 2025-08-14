@@ -46,6 +46,7 @@ export default function Register() {
     transportation: false,
     appointmentTime: false,
     location: false,
+    stayWithClothes: false,
   });
   
   // Get time slot ID from URL search params
@@ -391,6 +392,17 @@ export default function Register() {
                 />
                 <Label htmlFor="location" className="text-sm leading-5">
                   I know the location: {event.location}
+                </Label>
+              </div>
+
+              <div className="flex items-start space-x-3">
+                <Checkbox
+                  id="stay-with-clothes"
+                  checked={checkedItems.stayWithClothes}
+                  onCheckedChange={() => handleCheckboxChange('stayWithClothes')}
+                />
+                <Label htmlFor="stay-with-clothes" className="text-sm leading-5">
+                  <strong>I understand that I must stay with my clothes during the entire washing and drying process.</strong>
                 </Label>
               </div>
             </div>

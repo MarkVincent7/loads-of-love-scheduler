@@ -161,6 +161,7 @@ export async function sendConfirmationEmail(details: {
               <li>Please arrive on time to ensure your slot</li>
               <li>Service is completely free - no payment required</li>
               <li>We'll have volunteers to help with washing</li>
+              <li><strong>You must stay with your clothes during the entire washing and drying process</strong></li>
             </ul>
             
             ${calendarButtonsHTML}
@@ -202,6 +203,7 @@ export async function sendConfirmationEmail(details: {
       - Please arrive on time to ensure your slot
       - Service is completely free - no payment required
       - We'll have volunteers to help with washing
+      - You must stay with your clothes during the entire washing and drying process
 
       If you need to cancel your appointment, please visit: ${details.cancelUrl}
 
@@ -347,6 +349,8 @@ export async function sendSlotAvailableEmail(details: {
               <li>Please arrive on time to ensure your slot</li>
             </ul>
             
+            <p><strong>Important:</strong> You must stay with your clothes during the entire washing and drying process.</p>
+            
             <p>If you no longer need this appointment, please remove yourself from the waitlist:</p>
             <a href="${details.removeFromWaitlistUrl}" class="remove-link">Remove from Waitlist</a>
             
@@ -377,6 +381,8 @@ export async function sendSlotAvailableEmail(details: {
       What to bring:
       - Your laundry (we provide detergent and fabric softener)
       - Please arrive on time to ensure your slot
+
+      Important: You must stay with your clothes during the entire washing and drying process.
 
       If you no longer need this appointment, remove yourself from waitlist: ${details.removeFromWaitlistUrl}
 
@@ -506,6 +512,7 @@ export async function sendWaitlistPromotionEmail(details: {
               <li>Please arrive on time to ensure your slot</li>
               <li>Service is completely free - no payment required</li>
               <li>We'll have volunteers to help with washing and folding</li>
+              <li><strong>You must stay with your clothes during the entire washing and drying process</strong></li>
             </ul>
             
             <p>If you can no longer make this appointment, please cancel as soon as possible so we can offer the spot to someone else on the waitlist:</p>
@@ -539,6 +546,7 @@ export async function sendWaitlistPromotionEmail(details: {
       - Please arrive on time to ensure your slot
       - Service is completely free - no payment required
       - We'll have volunteers to help with washing and folding
+      - You must stay with your clothes during the entire washing and drying process
 
       If you can no longer make this appointment, please visit: ${details.cancelUrl}
 

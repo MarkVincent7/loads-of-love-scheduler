@@ -108,6 +108,7 @@ export default function RegistrationSuccess() {
                 <li>• Cancel within 24 hours if you can't make it</li>
                 <li>• Bring your laundry and any needed supplies</li>
                 <li>• Have transportation arranged to the location</li>
+                <li>• <strong>You must stay with your clothes during the entire washing and drying process</strong></li>
               </ul>
             </div>
 
