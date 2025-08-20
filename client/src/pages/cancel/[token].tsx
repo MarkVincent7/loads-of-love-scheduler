@@ -109,7 +109,7 @@ export default function CancelRegistration() {
                 Cancellation Failed
               </h3>
               <p className="text-gray-600 mb-6">
-                Unable to cancel your registration. Please contact Christ's Loving Hands at (555) 123-4567.
+                Unable to cancel your registration. Please contact Christ's Loving Hands at 513-367-7746.
               </p>
               <Button 
                 variant="outline"

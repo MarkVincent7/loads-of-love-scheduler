@@ -13,7 +13,7 @@ export async function checkBlacklistMiddleware(req: Request, res: Response, next
     
     if (isBlacklisted) {
       return res.status(403).json({ 
-        message: "Unable to register. Please contact Christ's Loving Hands at (555) 123-4567" 
+        message: "Unable to register. Please contact Christ's Loving Hands at 513-367-7746" 
       });
     }
     

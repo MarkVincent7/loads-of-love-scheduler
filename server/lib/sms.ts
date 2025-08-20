@@ -2,7 +2,7 @@ import { Registration, TimeSlot } from "@shared/schema";
 
 const VOIP_API_KEY = process.env.VOIP_API_KEY;
 const VOIP_API_URL = process.env.VOIP_API_URL;
-const CLH_PHONE_NUMBER = process.env.CLH_PHONE_NUMBER || "(555) 123-4567";
+const CLH_PHONE_NUMBER = process.env.CLH_PHONE_NUMBER || "513-367-7746";
 
 export async function sendConfirmationSMS(registration: Registration, timeSlot: TimeSlot): Promise<void> {
   if (!VOIP_API_KEY || !VOIP_API_URL) {

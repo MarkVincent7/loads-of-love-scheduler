@@ -14,7 +14,7 @@ export default function Home() {
               Unable to Load Events
             </h2>
             <p className="text-gray-600">
-              Please try again later or contact us at (555) 123-4567
+              Please try again later or contact us at 513-367-7746
             </p>
           </div>
         </div>
