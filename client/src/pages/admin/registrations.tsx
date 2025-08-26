@@ -430,24 +430,24 @@ export default function AdminRegistrations() {
               table-layout: auto;
             }
             th, td { 
-              border: 1px solid #d1d5db; 
-              padding: 2px 3px; 
+              border: 1px solid #e5e7eb; 
+              padding: 8px 6px; 
               text-align: left; 
               vertical-align: top;
-              white-space: nowrap;
-              overflow: hidden;
-              text-overflow: ellipsis;
-              font-size: 8px;
+              font-size: 9px;
             }
             th {
-              font-size: 8px;
-              font-weight: bold;
+              background-color: #f9fafb;
+              font-size: 9px;
+              font-weight: 600;
+              color: #374151;
+              border-bottom: 2px solid #d1d5db;
             }
-            td.address-cell {
-              white-space: normal;
-              word-wrap: break-word;
-              max-width: 120px;
-              font-size: 7px;
+            tr {
+              border-bottom: 1px solid #f3f4f6;
+            }
+            tr:hover {
+              background-color: #f9fafb;
             }
             th { 
               background-color: #f9fafb; 
@@ -490,12 +490,12 @@ export default function AdminRegistrations() {
                 font-size: 8px;
               }
               th, td {
-                padding: 1px 2px;
-                font-size: 6px;
+                padding: 4px 3px;
+                font-size: 7px;
               }
-              .address-cell {
-                max-width: 100px;
-                font-size: 5px;
+              th {
+                font-size: 7px;
+                font-weight: 600;
               }
               h1 { font-size: 16px; margin-bottom: 3px; }
               h2 { font-size: 12px; margin: 10px 0 5px 0; }
@@ -522,28 +522,39 @@ export default function AdminRegistrations() {
           <table>
             <thead>
               <tr>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Phone</th>
-                <th>Time Slot</th>
-                <th>Address</th>
-                <th>Signup Time</th>
+                <th style="width: 25%;">Name</th>
+                <th style="width: 20%;">Contact</th>
+                <th style="width: 15%;">Time Slot</th>
+                <th style="width: 15%;">Status</th>
+                <th style="width: 15%;">Registered</th>
+                <th style="width: 10%;">Actions</th>
               </tr>
             </thead>
             <tbody>
               ${confirmedRegistrations.map((reg: any) => {
                 const timeSlot = currentEvent?.timeSlots?.find((slot: any) => slot.id === reg.timeSlotId);
                 const timeSlotDisplay = timeSlot 
-                  ? timeSlot.startTime.substring(0, 5) + ' - ' + timeSlot.endTime.substring(0, 5)
+                  ? timeSlot.startTime.substring(0, 5) + ' PM - ' + timeSlot.endTime.substring(0, 5) + ' PM'
                   : 'N/A';
                 return `
                 <tr>
-                  <td><strong>${reg.name}</strong></td>
-                  <td>${reg.email}</td>
-                  <td>${reg.phone}</td>
-                  <td>${timeSlotDisplay}</td>
-                  <td class="address-cell">${reg.address}, ${reg.city}, ${reg.state} ${reg.zipCode}</td>
-                  <td class="signup-time">${formatSignupTime(reg.createdAt)}</td>
+                  <td>
+                    <div style="font-weight: bold; margin-bottom: 2px;">${reg.name}</div>
+                    <div style="font-size: 7px; color: #666;">${reg.address}, ${reg.city}, ${reg.state} ${reg.zipCode}</div>
+                  </td>
+                  <td>
+                    <div style="margin-bottom: 1px;">📧 ${reg.email}</div>
+                    <div>📞 ${reg.phone}</div>
+                  </td>
+                  <td style="text-align: center;">${timeSlotDisplay}</td>
+                  <td style="text-align: center;">
+                    <span style="background: #dcfce7; color: #166534; padding: 2px 6px; border-radius: 12px; font-size: 7px;">Confirmed</span>
+                  </td>
+                  <td style="text-align: center; font-size: 7px;">${formatSignupTime(reg.createdAt)}</td>
+                  <td style="text-align: center;">
+                    <span style="color: #059669; margin-right: 8px;">Edit</span>
+                    <span style="color: #dc2626;">🗑</span>
+                  </td>
                 </tr>
                 `;
               }).join('')}
@@ -560,28 +571,39 @@ export default function AdminRegistrations() {
           <table>
             <thead>
               <tr>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Phone</th>
-                <th>Time Slot</th>
-                <th>Address</th>
-                <th>Signup Time</th>
+                <th style="width: 25%;">Name</th>
+                <th style="width: 20%;">Contact</th>
+                <th style="width: 15%;">Time Slot</th>
+                <th style="width: 15%;">Status</th>
+                <th style="width: 15%;">Registered</th>
+                <th style="width: 10%;">Actions</th>
               </tr>
             </thead>
             <tbody>
               ${waitlistRegistrations.map((reg: any) => {
                 const timeSlot = currentEvent?.timeSlots?.find((slot: any) => slot.id === reg.timeSlotId);
                 const timeSlotDisplay = timeSlot 
-                  ? timeSlot.startTime.substring(0, 5) + ' - ' + timeSlot.endTime.substring(0, 5)
+                  ? timeSlot.startTime.substring(0, 5) + ' PM - ' + timeSlot.endTime.substring(0, 5) + ' PM'
                   : 'N/A';
                 return `
                 <tr style="background-color: #fffbeb;">
-                  <td><strong>${reg.name}</strong></td>
-                  <td>${reg.email}</td>
-                  <td>${reg.phone || 'N/A'}</td>
-                  <td>${timeSlotDisplay}</td>
-                  <td class="address-cell">${reg.address ? `${reg.address}, ${reg.city}, ${reg.state} ${reg.zipCode}` : 'Address not provided'}</td>
-                  <td class="signup-time">${formatSignupTime(reg.createdAt)}</td>
+                  <td>
+                    <div style="font-weight: bold; margin-bottom: 2px;">${reg.name}</div>
+                    <div style="font-size: 7px; color: #666;">${reg.address ? `${reg.address}, ${reg.city}, ${reg.state} ${reg.zipCode}` : 'Address not provided'}</div>
+                  </td>
+                  <td>
+                    <div style="margin-bottom: 1px;">📧 ${reg.email}</div>
+                    <div>📞 ${reg.phone || 'N/A'}</div>
+                  </td>
+                  <td style="text-align: center;">${timeSlotDisplay}</td>
+                  <td style="text-align: center;">
+                    <span style="background: #fef3c7; color: #92400e; padding: 2px 6px; border-radius: 12px; font-size: 7px;">Waitlist</span>
+                  </td>
+                  <td style="text-align: center; font-size: 7px;">${formatSignupTime(reg.createdAt)}</td>
+                  <td style="text-align: center;">
+                    <span style="color: #059669; margin-right: 8px;">Edit</span>
+                    <span style="color: #dc2626;">🗑</span>
+                  </td>
                 </tr>
                 `;
               }).join('')}
