@@ -522,19 +522,23 @@ export default function AdminRegistrations() {
           <table>
             <thead>
               <tr>
-                <th style="width: 25%;">Name</th>
-                <th style="width: 20%;">Contact</th>
-                <th style="width: 15%;">Time Slot</th>
-                <th style="width: 15%;">Status</th>
+                <th style="width: 35%;">Name</th>
+                <th style="width: 30%;">Contact</th>
+                <th style="width: 20%;">Time Slot</th>
                 <th style="width: 15%;">Registered</th>
-                <th style="width: 10%;">Actions</th>
               </tr>
             </thead>
             <tbody>
               ${confirmedRegistrations.map((reg: any) => {
                 const timeSlot = currentEvent?.timeSlots?.find((slot: any) => slot.id === reg.timeSlotId);
                 const timeSlotDisplay = timeSlot 
-                  ? timeSlot.startTime.substring(0, 5) + ' PM - ' + timeSlot.endTime.substring(0, 5) + ' PM'
+                  ? (() => {
+                      const startTime = new Date('2000-01-01T' + timeSlot.startTime);
+                      const endTime = new Date('2000-01-01T' + timeSlot.endTime);
+                      return startTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }) + 
+                             ' - ' + 
+                             endTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+                    })()
                   : 'N/A';
                 return `
                 <tr>
@@ -547,14 +551,7 @@ export default function AdminRegistrations() {
                     <div>📞 ${reg.phone}</div>
                   </td>
                   <td style="text-align: center;">${timeSlotDisplay}</td>
-                  <td style="text-align: center;">
-                    <span style="background: #dcfce7; color: #166534; padding: 2px 6px; border-radius: 12px; font-size: 7px;">Confirmed</span>
-                  </td>
                   <td style="text-align: center; font-size: 7px;">${formatSignupTime(reg.createdAt)}</td>
-                  <td style="text-align: center;">
-                    <span style="color: #059669; margin-right: 8px;">Edit</span>
-                    <span style="color: #dc2626;">🗑</span>
-                  </td>
                 </tr>
                 `;
               }).join('')}
@@ -571,19 +568,23 @@ export default function AdminRegistrations() {
           <table>
             <thead>
               <tr>
-                <th style="width: 25%;">Name</th>
-                <th style="width: 20%;">Contact</th>
-                <th style="width: 15%;">Time Slot</th>
-                <th style="width: 15%;">Status</th>
+                <th style="width: 35%;">Name</th>
+                <th style="width: 30%;">Contact</th>
+                <th style="width: 20%;">Time Slot</th>
                 <th style="width: 15%;">Registered</th>
-                <th style="width: 10%;">Actions</th>
               </tr>
             </thead>
             <tbody>
               ${waitlistRegistrations.map((reg: any) => {
                 const timeSlot = currentEvent?.timeSlots?.find((slot: any) => slot.id === reg.timeSlotId);
                 const timeSlotDisplay = timeSlot 
-                  ? timeSlot.startTime.substring(0, 5) + ' PM - ' + timeSlot.endTime.substring(0, 5) + ' PM'
+                  ? (() => {
+                      const startTime = new Date('2000-01-01T' + timeSlot.startTime);
+                      const endTime = new Date('2000-01-01T' + timeSlot.endTime);
+                      return startTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }) + 
+                             ' - ' + 
+                             endTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+                    })()
                   : 'N/A';
                 return `
                 <tr style="background-color: #fffbeb;">
@@ -596,14 +597,7 @@ export default function AdminRegistrations() {
                     <div>📞 ${reg.phone || 'N/A'}</div>
                   </td>
                   <td style="text-align: center;">${timeSlotDisplay}</td>
-                  <td style="text-align: center;">
-                    <span style="background: #fef3c7; color: #92400e; padding: 2px 6px; border-radius: 12px; font-size: 7px;">Waitlist</span>
-                  </td>
                   <td style="text-align: center; font-size: 7px;">${formatSignupTime(reg.createdAt)}</td>
-                  <td style="text-align: center;">
-                    <span style="color: #059669; margin-right: 8px;">Edit</span>
-                    <span style="color: #dc2626;">🗑</span>
-                  </td>
                 </tr>
                 `;
               }).join('')}
