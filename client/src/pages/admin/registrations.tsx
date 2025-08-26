@@ -20,6 +20,7 @@ import { format } from "date-fns";
 import { Search, Calendar, Clock, User, Phone, Mail, Trash2, UserX, ChevronDown, ChevronRight, Check, Printer } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import type { Registration, EventWithSlots } from "@shared/schema";
+import { apiRequest } from "@/lib/api";
 
 interface EventRegistrationsTableProps {
   eventId: string;
@@ -307,31 +308,8 @@ export default function AdminRegistrations() {
 
   const handlePrintEventRegistrations = async (event: any) => {
     try {
-      // Get auth token from localStorage
-      const token = localStorage.getItem('authToken');
-      if (!token) {
-        alert('Authentication required. Please log in again.');
-        return;
-      }
-
-      // Fetch registrations for this specific event
-      const response = await fetch(`/api/admin/registrations/${event.id}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-      
-      if (!response.ok) {
-        console.error(`Failed to fetch registrations for event ${event.id}:`, response.status, response.statusText);
-        if (response.status === 401) {
-          alert('Authentication failed. Please log in again.');
-          return;
-        }
-        alert('Failed to fetch registration data. Please try again.');
-        return;
-      }
-
+      // Use the existing API utility which handles authentication automatically
+      const response = await apiRequest('GET', `/api/admin/registrations/${event.id}`, undefined, true);
       const eventRegistrations = await response.json();
       
       // Get all confirmed registrations for this event, sorted by signup time
