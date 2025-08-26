@@ -431,17 +431,23 @@ export default function AdminRegistrations() {
             }
             th, td { 
               border: 1px solid #d1d5db; 
-              padding: 3px 4px; 
+              padding: 2px 3px; 
               text-align: left; 
               vertical-align: top;
               white-space: nowrap;
               overflow: hidden;
               text-overflow: ellipsis;
+              font-size: 8px;
+            }
+            th {
+              font-size: 8px;
+              font-weight: bold;
             }
             td.address-cell {
               white-space: normal;
               word-wrap: break-word;
-              max-width: 200px;
+              max-width: 120px;
+              font-size: 7px;
             }
             th { 
               background-color: #f9fafb; 
@@ -484,11 +490,12 @@ export default function AdminRegistrations() {
                 font-size: 8px;
               }
               th, td {
-                padding: 2px 3px;
-                font-size: 7px;
+                padding: 1px 2px;
+                font-size: 6px;
               }
               .address-cell {
-                max-width: 150px;
+                max-width: 100px;
+                font-size: 5px;
               }
               h1 { font-size: 16px; margin-bottom: 3px; }
               h2 { font-size: 12px; margin: 10px 0 5px 0; }
@@ -527,17 +534,7 @@ export default function AdminRegistrations() {
               ${confirmedRegistrations.map((reg: any) => {
                 const timeSlot = currentEvent?.timeSlots?.find((slot: any) => slot.id === reg.timeSlotId);
                 const timeSlotDisplay = timeSlot 
-                  ? new Date(`${event.date}T${timeSlot.startTime}`).toLocaleTimeString('en-US', {
-                      hour: 'numeric',
-                      minute: '2-digit',
-                      hour12: true,
-                      timeZone: 'America/New_York'
-                    }) + ' - ' + new Date(`${event.date}T${timeSlot.endTime}`).toLocaleTimeString('en-US', {
-                      hour: 'numeric',
-                      minute: '2-digit',
-                      hour12: true,
-                      timeZone: 'America/New_York'
-                    })
+                  ? timeSlot.startTime.substring(0, 5) + ' - ' + timeSlot.endTime.substring(0, 5)
                   : 'N/A';
                 return `
                 <tr>
@@ -575,17 +572,7 @@ export default function AdminRegistrations() {
               ${waitlistRegistrations.map((reg: any) => {
                 const timeSlot = currentEvent?.timeSlots?.find((slot: any) => slot.id === reg.timeSlotId);
                 const timeSlotDisplay = timeSlot 
-                  ? new Date(`${event.date}T${timeSlot.startTime}`).toLocaleTimeString('en-US', {
-                      hour: 'numeric',
-                      minute: '2-digit',
-                      hour12: true,
-                      timeZone: 'America/New_York'
-                    }) + ' - ' + new Date(`${event.date}T${timeSlot.endTime}`).toLocaleTimeString('en-US', {
-                      hour: 'numeric',
-                      minute: '2-digit',
-                      hour12: true,
-                      timeZone: 'America/New_York'
-                    })
+                  ? timeSlot.startTime.substring(0, 5) + ' - ' + timeSlot.endTime.substring(0, 5)
                   : 'N/A';
                 return `
                 <tr style="background-color: #fffbeb;">
