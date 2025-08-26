@@ -307,10 +307,28 @@ export default function AdminRegistrations() {
 
   const handlePrintEventRegistrations = async (event: any) => {
     try {
+      // Get auth token from localStorage
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        alert('Authentication required. Please log in again.');
+        return;
+      }
+
       // Fetch registrations for this specific event
-      const response = await fetch(`/api/events/${event.id}/registrations`);
+      const response = await fetch(`/api/admin/registrations/${event.id}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
       if (!response.ok) {
-        console.error(`Failed to fetch registrations for event ${event.id}`);
+        console.error(`Failed to fetch registrations for event ${event.id}:`, response.status, response.statusText);
+        if (response.status === 401) {
+          alert('Authentication failed. Please log in again.');
+          return;
+        }
+        alert('Failed to fetch registration data. Please try again.');
         return;
       }
 
