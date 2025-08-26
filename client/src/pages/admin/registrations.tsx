@@ -374,50 +374,60 @@ export default function AdminRegistrations() {
           <style>
             body { 
               font-family: Arial, sans-serif; 
-              margin: 20px; 
+              margin: 0.5in; 
               color: #333;
-              line-height: 1.4;
+              line-height: 1.2;
+              font-size: 11px;
             }
             h1 { 
               text-align: center; 
               color: #059669; 
-              margin-bottom: 10px;
-              font-size: 24px;
+              margin-bottom: 5px;
+              font-size: 18px;
+            }
+            h2 {
+              color: #1e40af;
+              font-size: 14px;
+              margin: 15px 0 8px 0;
+              page-break-after: avoid;
             }
             .subtitle {
               text-align: center;
               color: #666;
-              margin-bottom: 30px;
-              font-size: 16px;
+              margin-bottom: 15px;
+              font-size: 12px;
             }
             .event-header {
               background: #f3f4f6;
-              padding: 20px;
-              border-radius: 8px;
-              margin-bottom: 30px;
+              padding: 12px;
+              border-radius: 6px;
+              margin-bottom: 15px;
               border-left: 4px solid #059669;
               text-align: center;
+              page-break-inside: avoid;
             }
             .event-title {
-              font-size: 20px;
+              font-size: 14px;
               font-weight: bold;
               color: #111827;
-              margin-bottom: 10px;
+              margin-bottom: 8px;
             }
             .event-details {
-              font-size: 16px;
+              font-size: 11px;
               color: #6b7280;
             }
             table { 
               width: 100%; 
               border-collapse: collapse; 
-              margin-bottom: 30px;
-              font-size: 12px;
+              margin-bottom: 15px;
+              font-size: 9px;
+              page-break-inside: auto;
             }
             th, td { 
               border: 1px solid #d1d5db; 
-              padding: 10px; 
+              padding: 4px 6px; 
               text-align: left; 
+              vertical-align: top;
             }
             th { 
               background-color: #f9fafb; 
@@ -428,30 +438,44 @@ export default function AdminRegistrations() {
               background-color: #f9fafb;
             }
             .signup-time {
-              font-size: 11px;
+              font-size: 8px;
               color: #9ca3af;
             }
             .total-count {
               text-align: center;
-              font-size: 16px;
+              font-size: 11px;
               font-weight: bold;
               color: #059669;
-              margin: 20px 0;
-              padding: 15px;
+              margin: 8px 0;
+              padding: 8px;
               background: #f0f9f5;
-              border-radius: 8px;
+              border-radius: 4px;
             }
             .print-date {
               text-align: center;
               color: #9ca3af;
-              font-size: 12px;
-              margin-top: 40px;
+              font-size: 9px;
+              margin-top: 15px;
               border-top: 1px solid #e5e7eb;
-              padding-top: 15px;
+              padding-top: 10px;
             }
             @media print {
-              body { margin: 0; }
-              table { page-break-inside: avoid; }
+              body { 
+                margin: 0.3in; 
+                padding: 0; 
+                font-size: 9px;
+              }
+              table { 
+                page-break-inside: auto; 
+                font-size: 8px;
+              }
+              th, td {
+                padding: 2px 4px;
+              }
+              h1 { font-size: 16px; margin-bottom: 3px; }
+              h2 { font-size: 12px; margin: 10px 0 5px 0; }
+              .event-header { margin-bottom: 10px; padding: 8px; }
+              .total-count { margin: 5px 0; padding: 5px; }
             }
           </style>
         </head>
@@ -469,15 +493,15 @@ export default function AdminRegistrations() {
           </div>
           
           ${confirmedRegistrations.length > 0 ? `
-          <h2 style="margin-top: 30px; margin-bottom: 15px; color: #2563eb;">Confirmed Registrations</h2>
+          <h2 style="margin-top: 15px; margin-bottom: 8px; color: #2563eb;">Confirmed Registrations</h2>
           <table>
             <thead>
               <tr>
-                <th style="width: 20%;">Name</th>
-                <th style="width: 25%;">Email</th>
-                <th style="width: 15%;">Phone</th>
-                <th style="width: 25%;">Address</th>
-                <th style="width: 15%;">Signup Time</th>
+                <th style="width: 18%;">Name</th>
+                <th style="width: 22%;">Email</th>
+                <th style="width: 12%;">Phone</th>
+                <th style="width: 35%;">Address</th>
+                <th style="width: 13%;">Signup Time</th>
               </tr>
             </thead>
             <tbody>
@@ -499,15 +523,15 @@ export default function AdminRegistrations() {
           ` : ''}
           
           ${waitlistRegistrations.length > 0 ? `
-          <h2 style="margin-top: 30px; margin-bottom: 15px; color: #d97706;">Waitlist (Available for No-Shows)</h2>
+          <h2 style="margin-top: 15px; margin-bottom: 8px; color: #d97706;">Waitlist (Available for No-Shows)</h2>
           <table>
             <thead>
               <tr>
-                <th style="width: 20%;">Name</th>
-                <th style="width: 25%;">Email</th>
-                <th style="width: 15%;">Phone</th>
-                <th style="width: 25%;">Address</th>
-                <th style="width: 15%;">Signup Time</th>
+                <th style="width: 18%;">Name</th>
+                <th style="width: 22%;">Email</th>
+                <th style="width: 12%;">Phone</th>
+                <th style="width: 35%;">Address</th>
+                <th style="width: 13%;">Signup Time</th>
               </tr>
             </thead>
             <tbody>
