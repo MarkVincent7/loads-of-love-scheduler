@@ -312,13 +312,17 @@ export default function AdminRegistrations() {
       const response = await apiRequest('GET', `/api/admin/registrations/${event.id}`, undefined, true);
       const eventRegistrations = await response.json();
       
-      // Get all confirmed registrations for this event, sorted by signup time
+      // Get confirmed and waitlist registrations, sorted by signup time
       const confirmedRegistrations = eventRegistrations
         .filter((reg: any) => reg.status === 'confirmed')
         .sort((a: any, b: any) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
 
-      if (confirmedRegistrations.length === 0) {
-        alert('No confirmed registrations found for this event.');
+      const waitlistRegistrations = eventRegistrations
+        .filter((reg: any) => reg.status === 'waitlist')
+        .sort((a: any, b: any) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+
+      if (confirmedRegistrations.length === 0 && waitlistRegistrations.length === 0) {
+        alert('No registrations found for this event.');
         return;
       }
 
@@ -366,7 +370,7 @@ export default function AdminRegistrations() {
         <!DOCTYPE html>
         <html>
         <head>
-          <title>${event.title} - Confirmed Registrations</title>
+          <title>${event.title} - Registration Report</title>
           <style>
             body { 
               font-family: Arial, sans-serif; 
@@ -453,7 +457,7 @@ export default function AdminRegistrations() {
         </head>
         <body>
           <h1>Christ's Loving Hands - Loads of Love</h1>
-          <div class="subtitle">Confirmed Registrations</div>
+          <div class="subtitle">Registration Report</div>
           
           <div class="event-header">
             <div class="event-title">${event.title}</div>
@@ -464,6 +468,8 @@ export default function AdminRegistrations() {
             </div>
           </div>
           
+          ${confirmedRegistrations.length > 0 ? `
+          <h2 style="margin-top: 30px; margin-bottom: 15px; color: #2563eb;">Confirmed Registrations</h2>
           <table>
             <thead>
               <tr>
@@ -488,8 +494,39 @@ export default function AdminRegistrations() {
           </table>
           
           <div class="total-count">
-            Total Confirmed Registrations: ${confirmedRegistrations.length}
+            Total Confirmed: ${confirmedRegistrations.length}
           </div>
+          ` : ''}
+          
+          ${waitlistRegistrations.length > 0 ? `
+          <h2 style="margin-top: 30px; margin-bottom: 15px; color: #d97706;">Waitlist (Available for No-Shows)</h2>
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 20%;">Name</th>
+                <th style="width: 25%;">Email</th>
+                <th style="width: 15%;">Phone</th>
+                <th style="width: 25%;">Address</th>
+                <th style="width: 15%;">Signup Time</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${waitlistRegistrations.map((reg: any) => `
+                <tr style="background-color: #fffbeb;">
+                  <td><strong>${reg.name}</strong></td>
+                  <td>${reg.email}</td>
+                  <td>${reg.phone || 'N/A'}</td>
+                  <td>${reg.address ? `${reg.address}, ${reg.city}, ${reg.state} ${reg.zipCode}` : 'Address not provided'}</td>
+                  <td class="signup-time">${formatSignupTime(reg.createdAt)}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+          
+          <div class="total-count">
+            Total on Waitlist: ${waitlistRegistrations.length}
+          </div>
+          ` : ''}
           
           <div class="print-date">
             Report generated on ${formatReportTime()}
