@@ -522,14 +522,19 @@ export default function AdminRegistrations() {
           <table>
             <thead>
               <tr>
-                <th style="width: 35%;">Name</th>
-                <th style="width: 30%;">Contact</th>
-                <th style="width: 20%;">Time Slot</th>
-                <th style="width: 15%;">Registered</th>
+                <th style="width: 30%;">Name</th>
+                <th style="width: 25%;">Contact</th>
+                <th style="width: 15%;">Time Slot</th>
+                <th style="width: 10%;">Registered</th>
               </tr>
             </thead>
             <tbody>
-              ${confirmedRegistrations.map((reg: any) => {
+              ${confirmedRegistrations.sort((a: any, b: any) => {
+                const timeSlotA = currentEvent?.timeSlots?.find((slot: any) => slot.id === a.timeSlotId);
+                const timeSlotB = currentEvent?.timeSlots?.find((slot: any) => slot.id === b.timeSlotId);
+                if (!timeSlotA || !timeSlotB) return 0;
+                return new Date(timeSlotA.startTime).getTime() - new Date(timeSlotB.startTime).getTime();
+              }).map((reg: any) => {
                 const timeSlot = currentEvent?.timeSlots?.find((slot: any) => slot.id === reg.timeSlotId);
                 const timeSlotDisplay = timeSlot 
                   ? (() => {
@@ -543,15 +548,15 @@ export default function AdminRegistrations() {
                 return `
                 <tr>
                   <td>
-                    <div style="font-weight: bold; margin-bottom: 2px;">${reg.name}</div>
-                    <div style="font-size: 7px; color: #666;">${reg.address}, ${reg.city}, ${reg.state} ${reg.zipCode}</div>
+                    <div style="font-weight: bold; margin-bottom: 2px; font-size: 8px;">${reg.name}</div>
+                    <div style="font-size: 6px; color: #666;">${reg.address}, ${reg.city}, ${reg.state} ${reg.zipCode}</div>
                   </td>
                   <td>
-                    <div style="margin-bottom: 1px;">📧 ${reg.email}</div>
-                    <div>📞 ${reg.phone}</div>
+                    <div style="margin-bottom: 1px; font-size: 7px;">📧 ${reg.email}</div>
+                    <div style="font-size: 7px;">📞 ${reg.phone}</div>
                   </td>
-                  <td style="text-align: center;">${timeSlotDisplay}</td>
-                  <td style="text-align: center; font-size: 7px;">${formatSignupTime(reg.createdAt)}</td>
+                  <td style="text-align: center; font-size: 8px;">${timeSlotDisplay}</td>
+                  <td style="text-align: center; font-size: 6px;">${formatSignupTime(reg.createdAt)}</td>
                 </tr>
                 `;
               }).join('')}
@@ -568,14 +573,19 @@ export default function AdminRegistrations() {
           <table>
             <thead>
               <tr>
-                <th style="width: 35%;">Name</th>
-                <th style="width: 30%;">Contact</th>
-                <th style="width: 20%;">Time Slot</th>
-                <th style="width: 15%;">Registered</th>
+                <th style="width: 30%;">Name</th>
+                <th style="width: 25%;">Contact</th>
+                <th style="width: 15%;">Time Slot</th>
+                <th style="width: 10%;">Registered</th>
               </tr>
             </thead>
             <tbody>
-              ${waitlistRegistrations.map((reg: any) => {
+              ${waitlistRegistrations.sort((a: any, b: any) => {
+                const timeSlotA = currentEvent?.timeSlots?.find((slot: any) => slot.id === a.timeSlotId);
+                const timeSlotB = currentEvent?.timeSlots?.find((slot: any) => slot.id === b.timeSlotId);
+                if (!timeSlotA || !timeSlotB) return 0;
+                return new Date(timeSlotA.startTime).getTime() - new Date(timeSlotB.startTime).getTime();
+              }).map((reg: any) => {
                 const timeSlot = currentEvent?.timeSlots?.find((slot: any) => slot.id === reg.timeSlotId);
                 const timeSlotDisplay = timeSlot 
                   ? (() => {
@@ -589,15 +599,15 @@ export default function AdminRegistrations() {
                 return `
                 <tr style="background-color: #fffbeb;">
                   <td>
-                    <div style="font-weight: bold; margin-bottom: 2px;">${reg.name}</div>
-                    <div style="font-size: 7px; color: #666;">${reg.address ? `${reg.address}, ${reg.city}, ${reg.state} ${reg.zipCode}` : 'Address not provided'}</div>
+                    <div style="font-weight: bold; margin-bottom: 2px; font-size: 8px;">${reg.name}</div>
+                    <div style="font-size: 6px; color: #666;">${reg.address ? `${reg.address}, ${reg.city}, ${reg.state} ${reg.zipCode}` : 'Address not provided'}</div>
                   </td>
                   <td>
-                    <div style="margin-bottom: 1px;">📧 ${reg.email}</div>
-                    <div>📞 ${reg.phone || 'N/A'}</div>
+                    <div style="margin-bottom: 1px; font-size: 7px;">📧 ${reg.email}</div>
+                    <div style="font-size: 7px;">📞 ${reg.phone || 'N/A'}</div>
                   </td>
-                  <td style="text-align: center;">${timeSlotDisplay}</td>
-                  <td style="text-align: center; font-size: 7px;">${formatSignupTime(reg.createdAt)}</td>
+                  <td style="text-align: center; font-size: 8px;">${timeSlotDisplay}</td>
+                  <td style="text-align: center; font-size: 6px;">${formatSignupTime(reg.createdAt)}</td>
                 </tr>
                 `;
               }).join('')}
