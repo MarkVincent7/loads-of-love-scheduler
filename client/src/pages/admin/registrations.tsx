@@ -533,8 +533,8 @@ export default function AdminRegistrations() {
                 const timeSlot = currentEvent?.timeSlots?.find((slot: any) => slot.id === reg.timeSlotId);
                 const timeSlotDisplay = timeSlot 
                   ? (() => {
-                      const startTime = new Date('2000-01-01T' + timeSlot.startTime);
-                      const endTime = new Date('2000-01-01T' + timeSlot.endTime);
+                      const startTime = new Date(timeSlot.startTime);
+                      const endTime = new Date(timeSlot.endTime);
                       return startTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }) + 
                              ' - ' + 
                              endTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
@@ -579,8 +579,8 @@ export default function AdminRegistrations() {
                 const timeSlot = currentEvent?.timeSlots?.find((slot: any) => slot.id === reg.timeSlotId);
                 const timeSlotDisplay = timeSlot 
                   ? (() => {
-                      const startTime = new Date('2000-01-01T' + timeSlot.startTime);
-                      const endTime = new Date('2000-01-01T' + timeSlot.endTime);
+                      const startTime = new Date(timeSlot.startTime);
+                      const endTime = new Date(timeSlot.endTime);
                       return startTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }) + 
                              ' - ' + 
                              endTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
