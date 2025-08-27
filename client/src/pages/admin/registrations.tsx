@@ -522,10 +522,10 @@ export default function AdminRegistrations() {
           <table>
             <thead>
               <tr>
-                <th style="width: 30%;">Name</th>
-                <th style="width: 25%;">Contact</th>
-                <th style="width: 15%;">Time Slot</th>
-                <th style="width: 10%;">Registered</th>
+                <th>Name</th>
+                <th>Contact</th>
+                <th>Time Slot</th>
+                <th>Registered</th>
               </tr>
             </thead>
             <tbody>
@@ -548,15 +548,15 @@ export default function AdminRegistrations() {
                 return `
                 <tr>
                   <td>
-                    <div style="font-weight: bold; margin-bottom: 2px; font-size: 8px;">${reg.name}</div>
-                    <div style="font-size: 6px; color: #666;">${reg.address}, ${reg.city}, ${reg.state} ${reg.zipCode}</div>
+                    <div style="font-weight: bold; margin-bottom: 2px; font-size: 12px;">${reg.name}</div>
+                    <div style="font-size: 10px; color: #666;">${reg.address}, ${reg.city}, ${reg.state} ${reg.zipCode}</div>
                   </td>
                   <td>
-                    <div style="margin-bottom: 1px; font-size: 7px;">📧 ${reg.email}</div>
-                    <div style="font-size: 7px;">📞 ${reg.phone}</div>
+                    <div style="margin-bottom: 1px; font-size: 11px;">📧 ${reg.email}</div>
+                    <div style="font-size: 11px;">📞 ${reg.phone}</div>
                   </td>
-                  <td style="text-align: center; font-size: 8px;">${timeSlotDisplay}</td>
-                  <td style="text-align: center; font-size: 6px;">${formatSignupTime(reg.createdAt)}</td>
+                  <td style="text-align: center; font-size: 11px;">${timeSlotDisplay}</td>
+                  <td style="text-align: center; font-size: 10px;">${formatSignupTime(reg.createdAt)}</td>
                 </tr>
                 `;
               }).join('')}
@@ -573,10 +573,10 @@ export default function AdminRegistrations() {
           <table>
             <thead>
               <tr>
-                <th style="width: 30%;">Name</th>
-                <th style="width: 25%;">Contact</th>
-                <th style="width: 15%;">Time Slot</th>
-                <th style="width: 10%;">Registered</th>
+                <th>Name</th>
+                <th>Contact</th>
+                <th>Time Slot</th>
+                <th>Registered</th>
               </tr>
             </thead>
             <tbody>
@@ -599,15 +599,15 @@ export default function AdminRegistrations() {
                 return `
                 <tr style="background-color: #fffbeb;">
                   <td>
-                    <div style="font-weight: bold; margin-bottom: 2px; font-size: 8px;">${reg.name}</div>
-                    <div style="font-size: 6px; color: #666;">${reg.address ? `${reg.address}, ${reg.city}, ${reg.state} ${reg.zipCode}` : 'Address not provided'}</div>
+                    <div style="font-weight: bold; margin-bottom: 2px; font-size: 12px;">${reg.name}</div>
+                    <div style="font-size: 10px; color: #666;">${reg.address ? `${reg.address}, ${reg.city}, ${reg.state} ${reg.zipCode}` : 'Address not provided'}</div>
                   </td>
                   <td>
-                    <div style="margin-bottom: 1px; font-size: 7px;">📧 ${reg.email}</div>
-                    <div style="font-size: 7px;">📞 ${reg.phone || 'N/A'}</div>
+                    <div style="margin-bottom: 1px; font-size: 11px;">📧 ${reg.email}</div>
+                    <div style="font-size: 11px;">📞 ${reg.phone || 'N/A'}</div>
                   </td>
-                  <td style="text-align: center; font-size: 8px;">${timeSlotDisplay}</td>
-                  <td style="text-align: center; font-size: 6px;">${formatSignupTime(reg.createdAt)}</td>
+                  <td style="text-align: center; font-size: 11px;">${timeSlotDisplay}</td>
+                  <td style="text-align: center; font-size: 10px;">${formatSignupTime(reg.createdAt)}</td>
                 </tr>
                 `;
               }).join('')}
