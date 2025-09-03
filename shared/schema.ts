@@ -111,6 +111,13 @@ export const insertTimeSlotSchema = createInsertSchema(timeSlots).omit({
   createdAt: true,
 });
 
+// Valid zip codes for service area restriction
+export const VALID_ZIP_CODES = [
+  "45252", "45247", "45053", "45052", 
+  "45033", "45030", "45013", "45002", 
+  "47060", "47025"
+];
+
 export const insertRegistrationSchema = createInsertSchema(registrations).omit({
   id: true,
   createdAt: true,
@@ -123,7 +130,10 @@ export const insertRegistrationSchema = createInsertSchema(registrations).omit({
   address: z.string().min(1, "Address is required").optional(),
   city: z.string().min(1, "City is required").optional(),
   state: z.string().min(1, "State is required").optional(),
-  zipCode: z.string().min(5, "Valid zip code is required").optional(),
+  zipCode: z.string().min(1, "Zip code is required").refine(
+    (zip) => VALID_ZIP_CODES.includes(zip),
+    { message: "Zip code out of service area" }
+  ),
 });
 
 export const insertWaitlistSchema = z.object({

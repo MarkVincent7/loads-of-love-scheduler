@@ -10,6 +10,17 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+**September 3, 2025**
+- **CRITICAL SECURITY FIX**: Fixed zip code restriction bypass vulnerability
+- Server-side validation was completely missing for zip code restrictions
+- Users could bypass frontend validation using direct API calls, browser dev tools, or disabled JavaScript
+- Added proper server-side zip code validation in shared schema with VALID_ZIP_CODES array
+- Server now correctly rejects registrations with invalid zip codes (returns 400 error)
+- Zip code validation is now enforced on both frontend and backend for security
+- Updated shared schema to make zipCode required field instead of optional
+- Frontend and backend now share the same VALID_ZIP_CODES constant for consistency
+- Testing confirmed: invalid zip codes (99999) are rejected, valid zip codes (45247) are accepted
+
 **July 25, 2025**
 - Added delete registration functionality for admins
 - Created delete confirmation dialog with warning messages

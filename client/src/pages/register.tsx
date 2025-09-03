@@ -15,12 +15,7 @@ import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
 import type { Event, TimeSlot } from "@shared/schema";
-
-const VALID_ZIP_CODES = [
-  "45252", "45247", "45053", "45052", 
-  "45033", "45030", "45013", "45002", 
-  "47060", "47025"
-];
+import { VALID_ZIP_CODES } from "@shared/schema";
 
 const registrationSchema = z.object({
   name: z.string().min(1, "Name is required"),
