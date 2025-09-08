@@ -386,7 +386,9 @@ export default function Register() {
                   onCheckedChange={() => handleCheckboxChange('location')}
                 />
                 <Label htmlFor="location" className="text-sm leading-5">
-                  I know the location: {event.location}
+                  I know the location: {event.laundromatName && event.laundromatAddress 
+                    ? `${event.laundromatName}, ${event.laundromatAddress}`
+                    : event.location}
                 </Label>
               </div>
 
