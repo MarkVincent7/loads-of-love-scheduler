@@ -1,6 +1,6 @@
 import { storage } from "../storage";
 import { sendReminderEmail } from "./sendgrid";
-import { formatEmailDate, formatEmailTime } from "../../shared/timezone";
+import { formatEmailDate, formatEmailTime, getCurrentEasternTime, convertToEasternTime } from "../../shared/timezone";
 import type { RegistrationWithDetails } from "@shared/schema";
 
 // Run scheduler every hour
@@ -34,19 +34,23 @@ class EmailScheduler {
       // Get all upcoming registrations (within next 2 days)
       const upcomingRegistrations = await storage.getUpcomingRegistrations();
       
-      const now = new Date();
+      // Get current time in Eastern Time for proper comparison
+      const nowEastern = getCurrentEasternTime();
       
       for (const registration of upcomingRegistrations) {
-        const appointmentTime = new Date(registration.timeSlot.startTime);
-        const timeDiff = appointmentTime.getTime() - now.getTime();
+        // Convert appointment time to Eastern Time for consistent comparison
+        const appointmentTimeEastern = convertToEasternTime(registration.timeSlot.startTime);
+        const timeDiff = appointmentTimeEastern.getTime() - nowEastern.getTime();
         const hoursDiff = timeDiff / (1000 * 60 * 60);
+        
+        console.log(`Checking ${registration.name} (${registration.email}): appointment at ${appointmentTimeEastern.toLocaleString('en-US', {timeZone: 'America/New_York'})}, now is ${nowEastern.toLocaleString('en-US', {timeZone: 'America/New_York'})}, ${hoursDiff.toFixed(2)} hours difference`);
         
         // Send day-before reminder (20-28 hours before)
         if (hoursDiff <= 28 && hoursDiff > 20) {
           await this.sendDayBeforeReminder(registration);
         }
         
-        // Send morning-of reminder (2-6 hours before)
+        // Send morning-of reminder (2-6 hours before)  
         if (hoursDiff <= 6 && hoursDiff > 2) {
           await this.sendMorningOfReminder(registration);
         }

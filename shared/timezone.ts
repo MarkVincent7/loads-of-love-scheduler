@@ -59,3 +59,20 @@ export function formatForTimeInput(date: Date | string): string {
     minute: '2-digit'
   });
 }
+
+/**
+ * Get current time in Eastern Time zone as a Date object
+ */
+export function getCurrentEasternTime(): Date {
+  const now = new Date();
+  // Create a new date that represents the current moment in Eastern Time
+  return new Date(now.toLocaleString("en-US", {timeZone: EASTERN_TIMEZONE}));
+}
+
+/**
+ * Convert any date to Eastern Time for consistent comparison
+ */
+export function convertToEasternTime(date: Date | string): Date {
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  return new Date(dateObj.toLocaleString("en-US", {timeZone: EASTERN_TIMEZONE}));
+}
