@@ -542,7 +542,7 @@ export class DatabaseStorage implements IStorage {
     }));
   }
 
-  async checkReminderSent(registrationId: string, reminderType: 'day-before' | 'morning-of'): Promise<boolean> {
+  async checkReminderSent(registrationId: string, reminderType: 'day-before' | 'morning-of' | 'evening-before'): Promise<boolean> {
     const result = await db
       .select({ count: count() })
       .from(emailReminders)
@@ -554,7 +554,7 @@ export class DatabaseStorage implements IStorage {
     return (result[0]?.count || 0) > 0;
   }
 
-  async markReminderSent(registrationId: string, reminderType: 'day-before' | 'morning-of'): Promise<void> {
+  async markReminderSent(registrationId: string, reminderType: 'day-before' | 'morning-of' | 'evening-before'): Promise<void> {
     await db.insert(emailReminders).values({
       registrationId,
       reminderType,

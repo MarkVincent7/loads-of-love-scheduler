@@ -779,12 +779,20 @@ export async function sendReminderEmail(
     eventLocation: string;
     cancelUrl: string;
   },
-  reminderType: 'day-before' | 'hour-before'
+  reminderType: 'day-before' | 'hour-before' | 'evening-before'
 ) {
-  const reminderTitle = reminderType === 'day-before' ? 'Tomorrow' : 'In 1 Hour';
-  const reminderText = reminderType === 'day-before' 
-    ? 'This is a friendly reminder that your laundry appointment is tomorrow.'
-    : 'This is a reminder that your laundry appointment is in 1 hour.';
+  let reminderTitle, reminderText;
+  
+  if (reminderType === 'day-before') {
+    reminderTitle = 'Tomorrow';
+    reminderText = 'This is a friendly reminder that your laundry appointment is tomorrow.';
+  } else if (reminderType === 'evening-before') {
+    reminderTitle = 'Tomorrow Morning';
+    reminderText = 'This is a friendly reminder that your laundry appointment is tomorrow morning.';
+  } else {
+    reminderTitle = 'In 1 Hour';
+    reminderText = 'This is a reminder that your laundry appointment is in 1 hour.';
+  }
 
   const emailData = {
     to: details.email,
