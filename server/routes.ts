@@ -192,9 +192,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Create waitlist registration with only name and email
+      // Waitlist doesn't require address info, so we use empty string for zipCode
       const registration = await storage.createRegistration({
         ...validatedData,
-        status: 'waitlist'
+        status: 'waitlist',
+        zipCode: '' // Waitlist doesn't collect address information
       });
       
       // Send waitlist confirmation email
