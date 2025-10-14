@@ -189,3 +189,5 @@ export type RegistrationWithDetails = Registration & {
   event: Event;
   timeSlot: TimeSlot;
 };
+
+export type RecurringEventTracking = typeof recurringEventTracking.$inferSelect;

@@ -5,6 +5,7 @@ import {
   blacklist, 
   admins,
   emailReminders,
+  recurringEventTracking,
   type Event, 
   type InsertEvent,
   type TimeSlot,
@@ -16,7 +17,8 @@ import {
   type Admin,
   type InsertAdmin,
   type EventWithSlots,
-  type RegistrationWithDetails
+  type RegistrationWithDetails,
+  type RecurringEventTracking
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, gte, lte, desc, asc, count, sql } from "drizzle-orm";
@@ -86,6 +88,11 @@ export interface IStorage {
     status?: string;
     eventTitle?: string;
   }>>;
+  
+  // Recurring event automation
+  checkRecurringEventCreated(eventType: 'morning' | 'evening', yearMonth: string): Promise<boolean>;
+  trackRecurringEvent(eventType: 'morning' | 'evening', yearMonth: string, eventId: string): Promise<void>;
+  getEventByTitle(title: string): Promise<Event | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -724,6 +731,33 @@ export class DatabaseStorage implements IStorage {
     }
 
     return activities.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+  }
+
+  async checkRecurringEventCreated(eventType: 'morning' | 'evening', yearMonth: string): Promise<boolean> {
+    const [existing] = await db
+      .select()
+      .from(recurringEventTracking)
+      .where(and(
+        eq(recurringEventTracking.eventType, eventType),
+        eq(recurringEventTracking.yearMonth, yearMonth)
+      ));
+    return !!existing;
+  }
+
+  async trackRecurringEvent(eventType: 'morning' | 'evening', yearMonth: string, eventId: string): Promise<void> {
+    await db.insert(recurringEventTracking).values({
+      eventType,
+      yearMonth,
+      eventId
+    });
+  }
+
+  async getEventByTitle(title: string): Promise<Event | undefined> {
+    const [event] = await db
+      .select()
+      .from(events)
+      .where(eq(events.title, title));
+    return event || undefined;
   }
 }
 
