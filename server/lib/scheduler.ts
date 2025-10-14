@@ -1,6 +1,14 @@
 import { storage } from "../storage";
 import { sendReminderEmail } from "./sendgrid";
-import { formatEmailDate, formatEmailTime, getCurrentEasternTime, convertToEasternTime } from "../../shared/timezone";
+import { 
+  formatEmailDate, 
+  formatEmailTime, 
+  getCurrentEasternTime, 
+  convertToEasternTime,
+  getSecondTuesdayOfMonth,
+  getFourthTuesdayOfMonth,
+  getWednesdayAfter
+} from "../../shared/timezone";
 import type { RegistrationWithDetails } from "@shared/schema";
 
 // Run scheduler every hour
@@ -20,10 +28,12 @@ class EmailScheduler {
     
     // Run immediately on start
     this.processReminders();
+    this.processRecurringEvents();
     
     // Then run every hour
     setInterval(() => {
       this.processReminders();
+      this.processRecurringEvents();
     }, SCHEDULER_INTERVAL);
   }
 
@@ -170,6 +180,145 @@ class EmailScheduler {
       console.log(`Morning-of reminder sent to ${registration.email}`);
     } catch (error) {
       console.error(`Failed to send morning-of reminder to ${registration.email}:`, error);
+    }
+  }
+
+  private async processRecurringEvents() {
+    try {
+      console.log("Checking for recurring event automation...");
+      
+      const nowEastern = getCurrentEasternTime();
+      const currentYear = nowEastern.getFullYear();
+      const currentMonth = nowEastern.getMonth() + 1; // JavaScript months are 0-indexed
+      const currentDay = nowEastern.getDate();
+      const currentDayOfWeek = nowEastern.getDay();
+      
+      // Only process on Wednesdays
+      if (currentDayOfWeek !== 3) {
+        console.log(`Not Wednesday (current day: ${currentDayOfWeek}), skipping recurring event check`);
+        return;
+      }
+      
+      console.log(`It's Wednesday! Checking if we need to create next month's events...`);
+      
+      // Calculate 2nd and 4th Tuesday of current month
+      const secondTuesday = getSecondTuesdayOfMonth(currentYear, currentMonth);
+      const fourthTuesday = getFourthTuesdayOfMonth(currentYear, currentMonth);
+      
+      // Get Wednesday after each Tuesday
+      const wednesdayAfterSecond = getWednesdayAfter(secondTuesday);
+      const wednesdayAfterFourth = getWednesdayAfter(fourthTuesday);
+      
+      // Calculate next month's year and month
+      let nextMonth = currentMonth + 1;
+      let nextYear = currentYear;
+      if (nextMonth > 12) {
+        nextMonth = 1;
+        nextYear = currentYear + 1;
+      }
+      
+      const nextMonthYearMonth = `${nextYear}-${String(nextMonth).padStart(2, '0')}`;
+      
+      // Check if today is Wednesday after 2nd Tuesday -> create Morning event for next month
+      if (currentDay === wednesdayAfterSecond.getDate()) {
+        console.log(`Today is Wednesday after 2nd Tuesday! Checking Morning Loads of Love event...`);
+        await this.createRecurringEvent('morning', nextYear, nextMonth, nextMonthYearMonth);
+      }
+      
+      // Check if today is Wednesday after 4th Tuesday -> create Evening event for next month
+      if (currentDay === wednesdayAfterFourth.getDate()) {
+        console.log(`Today is Wednesday after 4th Tuesday! Checking Evening Loads of Love event...`);
+        await this.createRecurringEvent('evening', nextYear, nextMonth, nextMonthYearMonth);
+      }
+      
+    } catch (error) {
+      console.error("Error processing recurring events:", error);
+    }
+  }
+
+  private async createRecurringEvent(
+    eventType: 'morning' | 'evening', 
+    targetYear: number, 
+    targetMonth: number, 
+    yearMonth: string
+  ) {
+    try {
+      // Check if we've already created this event (idempotency)
+      const alreadyCreated = await storage.checkRecurringEventCreated(eventType, yearMonth);
+      if (alreadyCreated) {
+        console.log(`${eventType === 'morning' ? 'Morning' : 'Evening'} Loads of Love event for ${yearMonth} already exists`);
+        return;
+      }
+      
+      // Find the template event by title
+      const templateTitle = eventType === 'morning' 
+        ? 'Morning Loads of Love Event' 
+        : 'Evening Loads of Love';
+      
+      const templateEvent = await storage.getEventByTitle(templateTitle);
+      if (!templateEvent) {
+        console.error(`Template event not found: ${templateTitle}`);
+        return;
+      }
+      
+      // Get time slots for the template
+      const timeSlots = await storage.getTimeSlotsByEvent(templateEvent.id);
+      if (timeSlots.length === 0) {
+        console.error(`No time slots found for template event: ${templateTitle}`);
+        return;
+      }
+      
+      // Calculate target date (2nd or 4th Tuesday of next month)
+      const targetDate = eventType === 'morning' 
+        ? getSecondTuesdayOfMonth(targetYear, targetMonth)
+        : getFourthTuesdayOfMonth(targetYear, targetMonth);
+      
+      // Create the new event
+      const newEvent = await storage.createEvent({
+        title: templateEvent.title,
+        description: templateEvent.description,
+        date: targetDate,
+        location: templateEvent.location,
+        laundromatName: templateEvent.laundromatName,
+        laundromatAddress: templateEvent.laundromatAddress
+      });
+      
+      // Clone time slots
+      for (const slot of timeSlots) {
+        const originalStart = new Date(slot.startTime);
+        const originalEnd = new Date(slot.endTime);
+        
+        const newStartTime = new Date(
+          targetYear, 
+          targetMonth - 1, 
+          targetDate.getDate(), 
+          originalStart.getHours(), 
+          originalStart.getMinutes()
+        );
+        
+        const newEndTime = new Date(
+          targetYear, 
+          targetMonth - 1, 
+          targetDate.getDate(), 
+          originalEnd.getHours(), 
+          originalEnd.getMinutes()
+        );
+        
+        await storage.createTimeSlot({
+          eventId: newEvent.id,
+          startTime: newStartTime,
+          endTime: newEndTime,
+          capacity: slot.capacity
+        });
+      }
+      
+      // Track that we created this event
+      await storage.trackRecurringEvent(eventType, yearMonth, newEvent.id);
+      
+      console.log(`✓ Successfully created ${eventType} Loads of Love event for ${yearMonth} (${targetDate.toLocaleDateString()})`);
+      
+    } catch (error) {
+      console.error(`Error creating ${eventType} recurring event:`, error);
     }
   }
 

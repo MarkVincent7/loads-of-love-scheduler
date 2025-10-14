@@ -10,6 +10,19 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+**October 14, 2025**
+- **RECURRING EVENT AUTOMATION**: Implemented automatic monthly event creation system
+- Added scheduled job that runs hourly to check for recurring event creation
+- Morning Loads of Love Event automatically duplicates on Wednesday after 2nd Tuesday for next month's 2nd Tuesday
+- Evening Loads of Love automatically duplicates on Wednesday after 4th Tuesday for next month's 4th Tuesday
+- All automation uses America/New_York timezone for accurate date calculations
+- Implemented idempotent event creation - system prevents duplicate event creation for the same month
+- Added database tracking table (recurring_event_tracking) to record created events by type and month
+- Created utility functions for calculating nth weekday of month (2nd Tuesday, 4th Tuesday, etc.)
+- System finds template events by title ("Morning Loads of Love Event" and "Evening Loads of Love")
+- Automatically clones all event details including time slots, capacity, and location information
+- Comprehensive logging shows automation status and event creation confirmations
+
 **September 3, 2025**
 - **CRITICAL SECURITY FIX**: Fixed zip code restriction bypass vulnerability
 - Server-side validation was completely missing for zip code restrictions
