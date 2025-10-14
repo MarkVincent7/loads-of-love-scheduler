@@ -74,6 +74,15 @@ export const admins = pgTable("admins", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+// Recurring events tracking table (for idempotency)
+export const recurringEventTracking = pgTable("recurring_event_tracking", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  eventType: text("event_type").notNull(), // 'morning' or 'evening'
+  yearMonth: text("year_month").notNull(), // Format: 'YYYY-MM'
+  eventId: uuid("event_id").notNull().references(() => events.id, { onDelete: 'cascade' }),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 // Relations
 export const eventsRelations = relations(events, ({ many }) => ({
   timeSlots: many(timeSlots),
