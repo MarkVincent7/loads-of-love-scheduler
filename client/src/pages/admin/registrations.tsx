@@ -262,10 +262,12 @@ export default function AdminRegistrations() {
     return event.timeSlots.some(slot => new Date(slot.endTime) > now);
   });
   
-  const pastEvents = sortedEvents.filter(event => {
-    // All time slots have ended
-    return event.timeSlots.every(slot => new Date(slot.endTime) <= now);
-  });
+  const pastEvents = sortedEvents
+    .filter(event => {
+      // All time slots have ended
+      return event.timeSlots.every(slot => new Date(slot.endTime) <= now);
+    })
+    .reverse(); // Most recent past events first
 
   // Filter registrations based on search and status
   const filteredRegistrations = Array.isArray(typedRegistrations) ? typedRegistrations.filter((registration: any) => {
