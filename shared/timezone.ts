@@ -76,3 +76,63 @@ export function convertToEasternTime(date: Date | string): Date {
   const dateObj = typeof date === 'string' ? new Date(date) : date;
   return new Date(dateObj.toLocaleString("en-US", {timeZone: EASTERN_TIMEZONE}));
 }
+
+/**
+ * Get the nth occurrence of a specific weekday in a given month
+ * @param year - The year
+ * @param month - The month (1-12)
+ * @param weekday - The day of week (0 = Sunday, 1 = Monday, ..., 2 = Tuesday)
+ * @param occurrence - Which occurrence (1 = first, 2 = second, 4 = fourth, etc.)
+ * @returns Date object for the nth occurrence of the weekday in Eastern Time
+ */
+export function getNthWeekdayOfMonth(year: number, month: number, weekday: number, occurrence: number): Date {
+  // Start at the first day of the month
+  const firstDay = new Date(year, month - 1, 1);
+  
+  // Find the first occurrence of the desired weekday
+  const firstWeekdayDate = 1 + ((weekday - firstDay.getDay() + 7) % 7);
+  
+  // Calculate the date of the nth occurrence
+  const targetDate = firstWeekdayDate + (occurrence - 1) * 7;
+  
+  return new Date(year, month - 1, targetDate);
+}
+
+/**
+ * Get the 2nd Tuesday of a specific month
+ * @param year - The year
+ * @param month - The month (1-12)
+ * @returns Date object for the 2nd Tuesday in Eastern Time
+ */
+export function getSecondTuesdayOfMonth(year: number, month: number): Date {
+  return getNthWeekdayOfMonth(year, month, 2, 2); // 2 = Tuesday, 2 = second occurrence
+}
+
+/**
+ * Get the 4th Tuesday of a specific month
+ * @param year - The year
+ * @param month - The month (1-12)
+ * @returns Date object for the 4th Tuesday in Eastern Time
+ */
+export function getFourthTuesdayOfMonth(year: number, month: number): Date {
+  return getNthWeekdayOfMonth(year, month, 2, 4); // 2 = Tuesday, 4 = fourth occurrence
+}
+
+/**
+ * Get the Wednesday after a specific date
+ * @param date - The reference date
+ * @returns Date object for the Wednesday after the given date
+ */
+export function getWednesdayAfter(date: Date): Date {
+  const result = new Date(date);
+  const daysUntilWednesday = (3 - result.getDay() + 7) % 7;
+  
+  // If the reference date is already Wednesday, get next Wednesday
+  if (daysUntilWednesday === 0) {
+    result.setDate(result.getDate() + 7);
+  } else {
+    result.setDate(result.getDate() + daysUntilWednesday);
+  }
+  
+  return result;
+}
