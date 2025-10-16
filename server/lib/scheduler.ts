@@ -273,27 +273,30 @@ class EmailScheduler {
         laundromatAddress: templateEvent.laundromatAddress
       });
       
-      // Clone time slots - preserve Eastern Time hours/minutes
+      // Clone time slots - match admin clone route logic exactly
+      // Server is in UTC, database stores UTC, frontend converts to Eastern for display
       for (const slot of timeSlots) {
-        // Convert original times to Eastern Time to get the correct hours/minutes
-        const originalStartEastern = convertToEasternTime(slot.startTime);
-        const originalEndEastern = convertToEasternTime(slot.endTime);
+        const originalStart = new Date(slot.startTime);
+        const originalEnd = new Date(slot.endTime);
         
-        // Create new times using Eastern Time hours/minutes
+        // Create new datetime objects using the new event date but same UTC times
         const newStartTime = new Date(
           targetYear, 
           targetMonth - 1, 
           targetDate.getDate(), 
-          originalStartEastern.getHours(), 
-          originalStartEastern.getMinutes()
+          originalStart.getHours(), 
+          originalStart.getMinutes(), 
+          originalStart.getSeconds(), 
+          originalStart.getMilliseconds()
         );
-        
         const newEndTime = new Date(
           targetYear, 
           targetMonth - 1, 
           targetDate.getDate(), 
-          originalEndEastern.getHours(), 
-          originalEndEastern.getMinutes()
+          originalEnd.getHours(), 
+          originalEnd.getMinutes(), 
+          originalEnd.getSeconds(), 
+          originalEnd.getMilliseconds()
         );
         
         await storage.createTimeSlot({
