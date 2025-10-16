@@ -19,7 +19,7 @@ Preferred communication style: Simple, everyday language.
 - Implemented idempotent event creation - system prevents duplicate event creation for the same month
 - Added database tracking table (recurring_event_tracking) to record created events by type and month
 - Created utility functions for calculating nth weekday of month (2nd Tuesday, 4th Tuesday, etc.)
-- System finds template events by title ("Morning Loads of Love Event" and "Evening Loads of Love")
+- System finds template events by title ("Morning Loads of Love" and "Evening Loads of Love")
 - Automatically clones all event details including time slots, capacity, and location information
 - Comprehensive logging shows automation status and event creation confirmations
 

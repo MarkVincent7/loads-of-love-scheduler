@@ -190,16 +190,6 @@ class EmailScheduler {
       const nowEastern = getCurrentEasternTime();
       const currentYear = nowEastern.getFullYear();
       const currentMonth = nowEastern.getMonth() + 1; // JavaScript months are 0-indexed
-      const currentDay = nowEastern.getDate();
-      const currentDayOfWeek = nowEastern.getDay();
-      
-      // Only process on Wednesdays
-      if (currentDayOfWeek !== 3) {
-        console.log(`Not Wednesday (current day: ${currentDayOfWeek}), skipping recurring event check`);
-        return;
-      }
-      
-      console.log(`It's Wednesday! Checking if we need to create next month's events...`);
       
       // Calculate 2nd and 4th Tuesday of current month
       const secondTuesday = getSecondTuesdayOfMonth(currentYear, currentMonth);
@@ -219,15 +209,15 @@ class EmailScheduler {
       
       const nextMonthYearMonth = `${nextYear}-${String(nextMonth).padStart(2, '0')}`;
       
-      // Check if today is Wednesday after 2nd Tuesday -> create Morning event for next month
-      if (currentDay === wednesdayAfterSecond.getDate()) {
-        console.log(`Today is Wednesday after 2nd Tuesday! Checking Morning Loads of Love event...`);
+      // Check if we're on or after Wednesday after 2nd Tuesday -> create Morning event for next month
+      if (nowEastern >= wednesdayAfterSecond) {
+        console.log(`On or after Wednesday following 2nd Tuesday. Checking Morning Loads of Love event...`);
         await this.createRecurringEvent('morning', nextYear, nextMonth, nextMonthYearMonth);
       }
       
-      // Check if today is Wednesday after 4th Tuesday -> create Evening event for next month
-      if (currentDay === wednesdayAfterFourth.getDate()) {
-        console.log(`Today is Wednesday after 4th Tuesday! Checking Evening Loads of Love event...`);
+      // Check if we're on or after Wednesday after 4th Tuesday -> create Evening event for next month
+      if (nowEastern >= wednesdayAfterFourth) {
+        console.log(`On or after Wednesday following 4th Tuesday. Checking Evening Loads of Love event...`);
         await this.createRecurringEvent('evening', nextYear, nextMonth, nextMonthYearMonth);
       }
       
@@ -252,7 +242,7 @@ class EmailScheduler {
       
       // Find the template event by title
       const templateTitle = eventType === 'morning' 
-        ? 'Morning Loads of Love Event' 
+        ? 'Morning Loads of Love' 
         : 'Evening Loads of Love';
       
       const templateEvent = await storage.getEventByTitle(templateTitle);
