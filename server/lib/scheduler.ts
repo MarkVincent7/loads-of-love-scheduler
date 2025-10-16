@@ -7,9 +7,11 @@ import {
   convertToEasternTime,
   getSecondTuesdayOfMonth,
   getFourthTuesdayOfMonth,
-  getWednesdayAfter
+  getWednesdayAfter,
+  EASTERN_TIMEZONE
 } from "../../shared/timezone";
 import type { RegistrationWithDetails } from "@shared/schema";
+import { fromZonedTime } from 'date-fns-tz';
 
 // Run scheduler every hour
 const SCHEDULER_INTERVAL = 60 * 60 * 1000; // 1 hour in milliseconds
@@ -273,31 +275,41 @@ class EmailScheduler {
         laundromatAddress: templateEvent.laundromatAddress
       });
       
-      // Clone time slots - match admin clone route logic exactly
-      // Server is in UTC, database stores UTC, frontend converts to Eastern for display
+      // Clone time slots - preserve Eastern Time display across DST boundaries
+      // Template event might be in EDT (UTC-4) while new event is in EST (UTC-5) or vice versa
       for (const slot of timeSlots) {
-        const originalStart = new Date(slot.startTime);
-        const originalEnd = new Date(slot.endTime);
+        // Get the Eastern Time representation of the original times
+        const originalStartStr = new Date(slot.startTime).toLocaleString('en-US', {
+          timeZone: EASTERN_TIMEZONE,
+          hour12: false
+        });
+        const originalEndStr = new Date(slot.endTime).toLocaleString('en-US', {
+          timeZone: EASTERN_TIMEZONE,
+          hour12: false
+        });
         
-        // Create new datetime objects using the new event date but same UTC times
-        const newStartTime = new Date(
-          targetYear, 
-          targetMonth - 1, 
-          targetDate.getDate(), 
-          originalStart.getHours(), 
-          originalStart.getMinutes(), 
-          originalStart.getSeconds(), 
-          originalStart.getMilliseconds()
-        );
-        const newEndTime = new Date(
-          targetYear, 
-          targetMonth - 1, 
-          targetDate.getDate(), 
-          originalEnd.getHours(), 
-          originalEnd.getMinutes(), 
-          originalEnd.getSeconds(), 
-          originalEnd.getMilliseconds()
-        );
+        // Parse the Eastern Time hours and minutes
+        const startMatch = originalStartStr.match(/(\d{1,2}):(\d{2}):(\d{2})/);
+        const endMatch = originalEndStr.match(/(\d{1,2}):(\d{2}):(\d{2})/);
+        
+        if (!startMatch || !endMatch) {
+          console.error('Failed to parse time slot times:', { originalStartStr, originalEndStr });
+          continue;
+        }
+        
+        const startHour = parseInt(startMatch[1]);
+        const startMinute = parseInt(startMatch[2]);
+        const endHour = parseInt(endMatch[1]);
+        const endMinute = parseInt(endMatch[2]);
+        
+        // Create Date objects with the target date and parsed times
+        // These will be interpreted as local times (not yet in any specific timezone)
+        const newStartLocal = new Date(targetYear, targetMonth - 1, targetDate.getDate(), startHour, startMinute);
+        const newEndLocal = new Date(targetYear, targetMonth - 1, targetDate.getDate(), endHour, endMinute);
+        
+        // Convert from Eastern Time to UTC, which will handle DST automatically
+        const newStartTime = fromZonedTime(newStartLocal, EASTERN_TIMEZONE);
+        const newEndTime = fromZonedTime(newEndLocal, EASTERN_TIMEZONE);
         
         await storage.createTimeSlot({
           eventId: newEvent.id,
