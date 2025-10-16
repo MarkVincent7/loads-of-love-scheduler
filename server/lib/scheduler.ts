@@ -273,25 +273,27 @@ class EmailScheduler {
         laundromatAddress: templateEvent.laundromatAddress
       });
       
-      // Clone time slots
+      // Clone time slots - preserve Eastern Time hours/minutes
       for (const slot of timeSlots) {
-        const originalStart = new Date(slot.startTime);
-        const originalEnd = new Date(slot.endTime);
+        // Convert original times to Eastern Time to get the correct hours/minutes
+        const originalStartEastern = convertToEasternTime(slot.startTime);
+        const originalEndEastern = convertToEasternTime(slot.endTime);
         
+        // Create new times using Eastern Time hours/minutes
         const newStartTime = new Date(
           targetYear, 
           targetMonth - 1, 
           targetDate.getDate(), 
-          originalStart.getHours(), 
-          originalStart.getMinutes()
+          originalStartEastern.getHours(), 
+          originalStartEastern.getMinutes()
         );
         
         const newEndTime = new Date(
           targetYear, 
           targetMonth - 1, 
           targetDate.getDate(), 
-          originalEnd.getHours(), 
-          originalEnd.getMinutes()
+          originalEndEastern.getHours(), 
+          originalEndEastern.getMinutes()
         );
         
         await storage.createTimeSlot({
