@@ -86,22 +86,13 @@ export function convertToEasternTime(date: Date | string): Date {
  * @returns Date object for the nth occurrence of the weekday
  */
 export function getNthWeekdayOfMonth(year: number, month: number, weekday: number, occurrence: number): Date {
-  // Calculate the date - this works in any timezone
-  let date = 1;
-  let firstWeekday = new Date(year, month - 1, 1).getDay();
-  
-  // Find the first occurrence of the target weekday
-  if (firstWeekday <= weekday) {
-    date = 1 + (weekday - firstWeekday);
-  } else {
-    date = 1 + (7 - firstWeekday + weekday);
-  }
-  
-  // Add weeks to get to the nth occurrence
-  date += (occurrence - 1) * 7;
-  
-  // Create date at noon to avoid midnight timezone issues
-  return new Date(year, month - 1, date, 12, 0, 0);
+  const firstOfMonth = new Date(Date.UTC(year, month - 1, 1, 12, 0, 0)); // noon UTC
+  const firstDow = firstOfMonth.getUTCDay(); // 0..6
+  const offsetToWeekday = (weekday - firstDow + 7) % 7; // 0..6
+  const day = 1 + offsetToWeekday + (occurrence - 1) * 7;
+
+  // Construct the result ALSO at noon UTC (prevents timezone boundary issues)
+  return new Date(Date.UTC(year, month - 1, day, 12, 0, 0));
 }
 
 /**
