@@ -83,19 +83,25 @@ export function convertToEasternTime(date: Date | string): Date {
  * @param month - The month (1-12)
  * @param weekday - The day of week (0 = Sunday, 1 = Monday, ..., 2 = Tuesday)
  * @param occurrence - Which occurrence (1 = first, 2 = second, 4 = fourth, etc.)
- * @returns Date object for the nth occurrence of the weekday in Eastern Time
+ * @returns Date object for the nth occurrence of the weekday
  */
 export function getNthWeekdayOfMonth(year: number, month: number, weekday: number, occurrence: number): Date {
-  // Start at the first day of the month
-  const firstDay = new Date(year, month - 1, 1);
+  // Calculate the date - this works in any timezone
+  let date = 1;
+  let firstWeekday = new Date(year, month - 1, 1).getDay();
   
-  // Find the first occurrence of the desired weekday
-  const firstWeekdayDate = 1 + ((weekday - firstDay.getDay() + 7) % 7);
+  // Find the first occurrence of the target weekday
+  if (firstWeekday <= weekday) {
+    date = 1 + (weekday - firstWeekday);
+  } else {
+    date = 1 + (7 - firstWeekday + weekday);
+  }
   
-  // Calculate the date of the nth occurrence
-  const targetDate = firstWeekdayDate + (occurrence - 1) * 7;
+  // Add weeks to get to the nth occurrence
+  date += (occurrence - 1) * 7;
   
-  return new Date(year, month - 1, targetDate);
+  // Create date at noon to avoid midnight timezone issues
+  return new Date(year, month - 1, date, 12, 0, 0);
 }
 
 /**

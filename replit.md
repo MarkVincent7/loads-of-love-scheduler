@@ -10,6 +10,20 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+**October 29, 2025**
+- **CRITICAL FIX**: Fixed recurring event date calculation bug that generated events on Mondays instead of Tuesdays
+- Root cause: Date calculations at midnight UTC converted to previous day (Monday) in Eastern Time
+- Solution: Simplified getNthWeekdayOfMonth function to create dates at noon instead of midnight
+- Verified fix generates events on correct Tuesday dates (2nd and 4th Tuesday of each month)
+- All auto-generated events now correctly appear on Tuesdays as intended
+
+**October 16, 2025**
+- **DST HANDLING FIX**: Fixed timezone bug in recurring event automation that caused 1-hour time shift
+- Events created across DST boundaries (October EDT vs November EST) displayed incorrect times
+- Implemented proper DST-aware time slot cloning using date-fns-tz library
+- Time slots now preserve Eastern Time display (9:30 AM) regardless of DST changes
+- Template events in EDT correctly clone to EST months with same Eastern Time display
+
 **October 14, 2025**
 - **RECURRING EVENT AUTOMATION**: Implemented automatic monthly event creation system
 - Added scheduled job that runs hourly to check for recurring event creation
