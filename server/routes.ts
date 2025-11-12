@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { z } from "zod";
-import { insertRegistrationSchema, insertWaitlistSchema, insertEventSchema, insertTimeSlotSchema, insertBlacklistSchema } from "@shared/schema";
+import { insertRegistrationSchema, insertWaitlistSchema, insertEventSchema, insertTimeSlotSchema, insertBlacklistSchema, insertWebhookConfigSchema } from "@shared/schema";
 import { authMiddleware } from "./middleware/auth";
 import { generateAuthToken, verifyPassword, hashPassword } from "./lib/auth";
 import { checkBlacklistMiddleware } from "./lib/blacklist";
@@ -92,7 +92,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         status
       });
       
-      // Send confirmation email and SMS
+      // Send confirmation email, SMS, and webhook
       try {
         // Get event details for email
         const event = await storage.getEvent(validatedData.eventId);
@@ -126,6 +126,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
               event,
               timeSlot: targetSlot
             });
+            
+            // Send webhook notification for confirmed registration
+            const { sendWebhook } = await import('./lib/webhook');
+            await sendWebhook(registration, event, targetSlot);
           } else {
             // Send waitlist confirmation email
             const { sendWaitlistConfirmationEmail } = await import('./lib/sendgrid');
@@ -823,6 +827,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching recent activity:", error);
       res.status(500).json({ message: "Failed to fetch recent activity" });
+    }
+  });
+  
+  // Get webhook configuration
+  app.get("/api/admin/webhook", authMiddleware, async (req, res) => {
+    try {
+      const config = await storage.getWebhookConfig();
+      res.json(config || { webhookUrl: '', enabled: 1 });
+    } catch (error) {
+      console.error("Error fetching webhook config:", error);
+      res.status(500).json({ message: "Failed to fetch webhook configuration" });
+    }
+  });
+  
+  // Update webhook configuration
+  app.post("/api/admin/webhook", authMiddleware, async (req, res) => {
+    try {
+      const webhookData = insertWebhookConfigSchema.parse(req.body);
+      const config = await storage.upsertWebhookConfig(webhookData);
+      res.json(config);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          message: "Invalid webhook configuration",
+          errors: error.errors 
+        });
+      }
+      console.error("Error updating webhook config:", error);
+      res.status(500).json({ message: "Failed to update webhook configuration" });
     }
   });
   
