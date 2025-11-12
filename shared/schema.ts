@@ -83,6 +83,14 @@ export const recurringEventTracking = pgTable("recurring_event_tracking", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+// Webhook configuration table
+export const webhookConfig = pgTable("webhook_config", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  webhookUrl: text("webhook_url").notNull(),
+  enabled: integer("enabled").notNull().default(1), // 1 = enabled, 0 = disabled
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
 // Relations
 export const eventsRelations = relations(events, ({ many }) => ({
   timeSlots: many(timeSlots),
@@ -165,6 +173,11 @@ export const insertAdminSchema = createInsertSchema(admins).omit({
   password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
+export const insertWebhookConfigSchema = createInsertSchema(webhookConfig).omit({
+  id: true,
+  updatedAt: true,
+});
+
 // Types
 export type Event = typeof events.$inferSelect;
 export type InsertEvent = z.infer<typeof insertEventSchema>;
@@ -191,3 +204,5 @@ export type RegistrationWithDetails = Registration & {
 };
 
 export type RecurringEventTracking = typeof recurringEventTracking.$inferSelect;
+export type WebhookConfig = typeof webhookConfig.$inferSelect;
+export type InsertWebhookConfig = z.infer<typeof insertWebhookConfigSchema>;

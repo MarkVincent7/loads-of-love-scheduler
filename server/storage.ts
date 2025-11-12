@@ -6,6 +6,7 @@ import {
   admins,
   emailReminders,
   recurringEventTracking,
+  webhookConfig,
   type Event, 
   type InsertEvent,
   type TimeSlot,
@@ -18,7 +19,9 @@ import {
   type InsertAdmin,
   type EventWithSlots,
   type RegistrationWithDetails,
-  type RecurringEventTracking
+  type RecurringEventTracking,
+  type WebhookConfig,
+  type InsertWebhookConfig
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, gte, lte, desc, asc, count, sql } from "drizzle-orm";
@@ -93,6 +96,10 @@ export interface IStorage {
   checkRecurringEventCreated(eventType: 'morning' | 'evening', yearMonth: string): Promise<boolean>;
   trackRecurringEvent(eventType: 'morning' | 'evening', yearMonth: string, eventId: string): Promise<void>;
   getEventByTitle(title: string): Promise<Event | undefined>;
+  
+  // Webhook configuration
+  getWebhookConfig(): Promise<WebhookConfig | undefined>;
+  upsertWebhookConfig(config: InsertWebhookConfig): Promise<WebhookConfig>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -758,6 +765,36 @@ export class DatabaseStorage implements IStorage {
       .from(events)
       .where(eq(events.title, title));
     return event || undefined;
+  }
+
+  async getWebhookConfig(): Promise<WebhookConfig | undefined> {
+    const [config] = await db
+      .select()
+      .from(webhookConfig)
+      .limit(1);
+    return config || undefined;
+  }
+
+  async upsertWebhookConfig(config: InsertWebhookConfig): Promise<WebhookConfig> {
+    const existing = await this.getWebhookConfig();
+    
+    if (existing) {
+      const [updated] = await db
+        .update(webhookConfig)
+        .set({ 
+          ...config,
+          updatedAt: new Date()
+        })
+        .where(eq(webhookConfig.id, existing.id))
+        .returning();
+      return updated;
+    } else {
+      const [created] = await db
+        .insert(webhookConfig)
+        .values(config)
+        .returning();
+      return created;
+    }
   }
 }
 
