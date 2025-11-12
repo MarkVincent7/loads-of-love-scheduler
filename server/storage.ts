@@ -771,30 +771,28 @@ export class DatabaseStorage implements IStorage {
     const [config] = await db
       .select()
       .from(webhookConfig)
-      .limit(1);
+      .where(eq(webhookConfig.id, 'webhook-config'));
     return config || undefined;
   }
 
   async upsertWebhookConfig(config: InsertWebhookConfig): Promise<WebhookConfig> {
-    const existing = await this.getWebhookConfig();
-    
-    if (existing) {
-      const [updated] = await db
-        .update(webhookConfig)
-        .set({ 
-          ...config,
+    const [result] = await db
+      .insert(webhookConfig)
+      .values({
+        id: 'webhook-config',
+        ...config,
+        updatedAt: new Date()
+      })
+      .onConflictDoUpdate({
+        target: webhookConfig.id,
+        set: {
+          webhookUrl: config.webhookUrl,
+          enabled: config.enabled,
           updatedAt: new Date()
-        })
-        .where(eq(webhookConfig.id, existing.id))
-        .returning();
-      return updated;
-    } else {
-      const [created] = await db
-        .insert(webhookConfig)
-        .values(config)
-        .returning();
-      return created;
-    }
+        }
+      })
+      .returning();
+    return result;
   }
 }
 

@@ -83,9 +83,9 @@ export const recurringEventTracking = pgTable("recurring_event_tracking", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
-// Webhook configuration table
+// Webhook configuration table (singleton pattern with fixed ID)
 export const webhookConfig = pgTable("webhook_config", {
-  id: uuid("id").primaryKey().defaultRandom(),
+  id: varchar("id", { length: 50 }).primaryKey().default('webhook-config'),
   webhookUrl: text("webhook_url").notNull(),
   enabled: integer("enabled").notNull().default(1), // 1 = enabled, 0 = disabled
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
