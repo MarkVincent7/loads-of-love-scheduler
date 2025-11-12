@@ -11,7 +11,8 @@ import {
   BarChart3, 
   LogOut,
   Menu,
-  X
+  X,
+  Webhook
 } from "lucide-react";
 import { useState } from "react";
 
@@ -25,6 +26,7 @@ const navigation = [
   { name: 'Registrations', href: '/admin/registrations', icon: Users },
   { name: 'Blacklist', href: '/admin/blacklist', icon: Ban },
   { name: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
+  { name: 'SMS Webhook', href: '/admin/webhook', icon: Webhook },
 ];
 
 export default function AdminLayout({ children }: AdminLayoutProps) {
