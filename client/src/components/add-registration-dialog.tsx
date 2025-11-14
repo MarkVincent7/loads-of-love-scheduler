@@ -2,6 +2,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { z } from "zod";
+import { useMemo } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
@@ -39,6 +40,13 @@ interface AddRegistrationDialogProps {
 export default function AddRegistrationDialog({ open, onOpenChange, events }: AddRegistrationDialogProps) {
   const { toast } = useToast();
 
+  const upcomingEvents = useMemo(() => {
+    const now = new Date();
+    return events.filter(event => 
+      event.timeSlots.some(slot => new Date(slot.endTime) >= now)
+    );
+  }, [events]);
+
   const form = useForm<AddRegistrationFormData>({
     resolver: zodResolver(addRegistrationSchema),
     defaultValues: {
@@ -56,7 +64,7 @@ export default function AddRegistrationDialog({ open, onOpenChange, events }: Ad
   });
 
   const selectedEventId = form.watch("eventId");
-  const selectedEvent = events.find(e => e.id === selectedEventId);
+  const selectedEvent = upcomingEvents.find(e => e.id === selectedEventId);
 
   const addMutation = useMutation({
     mutationFn: async (data: AddRegistrationFormData) => {
@@ -123,11 +131,17 @@ export default function AddRegistrationDialog({ open, onOpenChange, events }: Ad
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {events.map((event) => (
-                          <SelectItem key={event.id} value={event.id}>
-                            {event.title} - {new Date(event.date).toLocaleDateString()}
-                          </SelectItem>
-                        ))}
+                        {upcomingEvents.length === 0 ? (
+                          <div className="p-2 text-sm text-muted-foreground text-center">
+                            No upcoming events available
+                          </div>
+                        ) : (
+                          upcomingEvents.map((event) => (
+                            <SelectItem key={event.id} value={event.id}>
+                              {event.title} - {new Date(event.date).toLocaleDateString()}
+                            </SelectItem>
+                          ))
+                        )}
                       </SelectContent>
                     </Select>
                     <FormMessage />
