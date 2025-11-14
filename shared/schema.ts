@@ -153,6 +153,25 @@ export const insertRegistrationSchema = createInsertSchema(registrations).omit({
   ),
 });
 
+export const insertAdminRegistrationSchema = createInsertSchema(registrations).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  uniqueCancelToken: true,
+}).extend({
+  name: z.string().min(1, "Name is required"),
+  email: z.string().email("Valid email is required"),
+  phone: z.string().optional(),
+  address: z.string().optional(),
+  city: z.string().optional(),
+  state: z.string().optional(),
+  zipCode: z.string().optional().refine(
+    (zip) => !zip || VALID_ZIP_CODES.includes(zip),
+    { message: "Zip code out of service area" }
+  ),
+  status: z.enum(['confirmed', 'waitlist', 'cancelled', 'no-show']).optional(),
+});
+
 export const insertWaitlistSchema = z.object({
   eventId: z.string(),
   timeSlotId: z.string(),
@@ -185,6 +204,7 @@ export type TimeSlot = typeof timeSlots.$inferSelect;
 export type InsertTimeSlot = z.infer<typeof insertTimeSlotSchema>;
 export type Registration = typeof registrations.$inferSelect;
 export type InsertRegistration = z.infer<typeof insertRegistrationSchema>;
+export type InsertAdminRegistration = z.infer<typeof insertAdminRegistrationSchema>;
 export type Blacklist = typeof blacklist.$inferSelect;
 export type InsertBlacklist = z.infer<typeof insertBlacklistSchema>;
 export type Admin = typeof admins.$inferSelect;

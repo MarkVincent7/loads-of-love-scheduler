@@ -13,6 +13,7 @@ import {
   type InsertTimeSlot,
   type Registration,
   type InsertRegistration,
+  type InsertAdminRegistration,
   type Blacklist,
   type InsertBlacklist,
   type Admin,
@@ -42,7 +43,7 @@ export interface IStorage {
   getTimeSlotsByEvent(eventId: string): Promise<TimeSlot[]>;
   
   // Registrations
-  createRegistration(registration: InsertRegistration): Promise<Registration>;
+  createRegistration(registration: InsertRegistration | InsertAdminRegistration): Promise<Registration>;
   getRegistrationsByEvent(eventId: string): Promise<RegistrationWithDetails[]>;
   getRegistrationByToken(token: string): Promise<Registration | undefined>;
   updateRegistration(id: string, registration: Partial<InsertRegistration>): Promise<Registration>;
@@ -271,11 +272,17 @@ export class DatabaseStorage implements IStorage {
       .orderBy(asc(timeSlots.startTime));
   }
 
-  async createRegistration(registration: InsertRegistration): Promise<Registration> {
+  async createRegistration(registration: InsertRegistration | InsertAdminRegistration): Promise<Registration> {
     const [newRegistration] = await db
       .insert(registrations)
       .values({
         ...registration,
+        // Normalize optional fields to empty strings instead of null
+        phone: registration.phone || '',
+        address: registration.address || '',
+        city: registration.city || '',
+        state: registration.state || '',
+        zipCode: registration.zipCode || '',
         updatedAt: new Date()
       })
       .returning();

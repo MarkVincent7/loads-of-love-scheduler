@@ -4,6 +4,7 @@ import AdminLayout from "@/components/admin-layout";
 import EditRegistrationDialog from "@/components/edit-registration-dialog";
 import CancelRegistrationDialog from "@/components/cancel-registration-dialog";
 import DeleteRegistrationDialog from "@/components/delete-registration-dialog";
+import AddRegistrationDialog from "@/components/add-registration-dialog";
 import { useAuthStore } from "@/lib/auth";
 import { useEvents } from "@/hooks/use-events";
 import { useRegistrations, useMarkAsNoShow, useUpdateRegistration } from "@/hooks/use-admin";
@@ -17,7 +18,7 @@ import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { format } from "date-fns";
-import { Search, Calendar, Clock, User, Phone, Mail, Trash2, UserX, ChevronDown, ChevronRight, Check, Printer } from "lucide-react";
+import { Search, Calendar, Clock, User, Phone, Mail, Trash2, UserX, ChevronDown, ChevronRight, Check, Printer, Plus } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import type { Registration, EventWithSlots } from "@shared/schema";
 import { apiRequest } from "@/lib/api";
@@ -226,6 +227,7 @@ export default function AdminRegistrations() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [selectedRegistration, setSelectedRegistration] = useState<Registration | null>(null);
   const [expandedEvents, setExpandedEvents] = useState<Set<string>>(new Set());
 
@@ -644,9 +646,18 @@ export default function AdminRegistrations() {
   return (
     <AdminLayout>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Registration Management</h1>
-          <p className="text-gray-600">View event registrations organized by date and manage attendance</p>
+        <div className="flex items-start justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Registration Management</h1>
+            <p className="text-gray-600">View event registrations organized by date and manage attendance</p>
+          </div>
+          <Button
+            onClick={() => setAddDialogOpen(true)}
+            data-testid="button-add-registration"
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Add Registration
+          </Button>
         </div>
 
         {/* Filters */}
@@ -919,6 +930,12 @@ export default function AdminRegistrations() {
           setDeleteDialogOpen(false);
           setSelectedRegistration(null);
         }}
+      />
+
+      <AddRegistrationDialog
+        open={addDialogOpen}
+        onOpenChange={setAddDialogOpen}
+        events={events}
       />
     </AdminLayout>
   );

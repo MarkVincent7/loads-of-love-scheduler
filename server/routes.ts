@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { z } from "zod";
-import { insertRegistrationSchema, insertWaitlistSchema, insertEventSchema, insertTimeSlotSchema, insertBlacklistSchema, insertWebhookConfigSchema } from "@shared/schema";
+import { insertRegistrationSchema, insertAdminRegistrationSchema, insertWaitlistSchema, insertEventSchema, insertTimeSlotSchema, insertBlacklistSchema, insertWebhookConfigSchema } from "@shared/schema";
 import { authMiddleware } from "./middleware/auth";
 import { generateAuthToken, verifyPassword, hashPassword } from "./lib/auth";
 import { checkBlacklistMiddleware } from "./lib/blacklist";
@@ -580,6 +580,140 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching registrations:", error);
       res.status(500).json({ message: "Failed to fetch registrations" });
+    }
+  });
+
+  // Create registration (admin-only, bypasses blacklist check)
+  app.post("/api/admin/registrations", authMiddleware, async (req, res) => {
+    try {
+      const validatedData = insertAdminRegistrationSchema.parse(req.body);
+      
+      // Check for duplicate registration
+      const isDuplicate = await storage.checkDuplicateRegistration(
+        validatedData.email, 
+        validatedData.phone || '', 
+        validatedData.eventId
+      );
+      
+      if (isDuplicate) {
+        return res.status(400).json({ 
+          message: "This person is already registered for this event" 
+        });
+      }
+      
+      // Get time slot to check capacity
+      const timeSlots = await storage.getTimeSlotsByEvent(validatedData.eventId);
+      const targetSlot = timeSlots.find(slot => slot.id === validatedData.timeSlotId);
+      
+      if (!targetSlot) {
+        return res.status(404).json({ message: "Time slot not found" });
+      }
+      
+      // Admin can override status, otherwise calculate from capacity
+      let status: 'confirmed' | 'waitlist' = 'confirmed';
+      
+      if (validatedData.status) {
+        // Validate admin-provided status
+        if (!['confirmed', 'waitlist'].includes(validatedData.status)) {
+          return res.status(400).json({ message: "Invalid status. Must be 'confirmed' or 'waitlist'" });
+        }
+        status = validatedData.status as 'confirmed' | 'waitlist';
+      } else {
+        // Auto-calculate status from capacity
+        const registrations = await storage.getRegistrationsByEvent(validatedData.eventId);
+        const confirmedCount = registrations.filter(
+          r => r.timeSlot.id === validatedData.timeSlotId && r.status === 'confirmed'
+        ).length;
+        status = confirmedCount >= targetSlot.capacity ? 'waitlist' : 'confirmed';
+      }
+      
+      const registration = await storage.createRegistration({
+        ...validatedData,
+        status
+      });
+      
+      // Send confirmation email, SMS, and webhook
+      try {
+        // Get event details for email
+        const event = await storage.getEvent(validatedData.eventId);
+        if (event) {
+          // Import timezone utilities and format date/time for email in Eastern Time
+          const { formatEmailDate, formatEmailTime } = await import('../shared/timezone');
+          
+          const eventDate = formatEmailDate(targetSlot.startTime);
+          const startTime = formatEmailTime(targetSlot.startTime);
+          const endTime = formatEmailTime(targetSlot.endTime);
+          
+          if (status === 'confirmed') {
+            await sendConfirmationEmail({
+              name: registration.name,
+              email: registration.email,
+              eventTitle: event.title,
+              eventDate: eventDate,
+              eventTime: `${startTime} - ${endTime}`,
+              eventLocation: event.laundromatName ? 
+                `${event.laundromatName}${event.laundromatAddress ? ', ' + event.laundromatAddress : ''}` : 
+                event.location,
+              cancelUrl: `${process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS}` : 'http://localhost:5000'}/cancel/${registration.uniqueCancelToken}`,
+              startTime: targetSlot.startTime,
+              endTime: targetSlot.endTime
+            });
+            
+            // Send admin notification for new confirmed registration
+            const { sendNewRegistrationNotification } = await import('./lib/admin-notifications');
+            await sendNewRegistrationNotification({
+              registration,
+              event,
+              timeSlot: targetSlot
+            });
+            
+            // Send webhook notification for confirmed registration
+            const { sendWebhook } = await import('./lib/webhook');
+            await sendWebhook(registration, event, targetSlot);
+          } else {
+            // Send waitlist confirmation email
+            const { sendWaitlistConfirmationEmail } = await import('./lib/sendgrid');
+            await sendWaitlistConfirmationEmail({
+              name: registration.name,
+              email: registration.email,
+              eventTitle: event.title,
+              eventDate: eventDate,
+              eventTime: `${startTime} - ${endTime}`,
+              eventLocation: event.location,
+              cancelUrl: `${process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS}` : 'http://localhost:5000'}/cancel/${registration.uniqueCancelToken}`
+            });
+            
+            // Send admin notification for waitlist addition
+            const { sendWaitlistNotification } = await import('./lib/admin-notifications');
+            await sendWaitlistNotification({
+              registration,
+              event,
+              timeSlot: targetSlot
+            });
+          }
+        }
+        await sendConfirmationSMS(registration, targetSlot);
+      } catch (emailError) {
+        console.error("Error sending confirmation:", emailError);
+        // Don't fail the registration if email/SMS fails
+      }
+      
+      res.status(201).json({ 
+        registration,
+        status,
+        message: status === 'waitlist' 
+          ? "Registration added to waitlist" 
+          : "Registration created successfully"
+      });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          message: "Invalid registration data",
+          errors: error.errors 
+        });
+      }
+      console.error("Error creating registration:", error);
+      res.status(500).json({ message: "Failed to create registration" });
     }
   });
 
