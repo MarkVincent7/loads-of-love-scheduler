@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Christ's Loving Hands - Loads of Love Scheduler</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@heroicons/react@2.0.16/24/outline/index.js" type="module"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                fontFamily: {
+                    'sans': ['Inter', 'system-ui', 'sans-serif'],
+                },
+                colors: {
+                    primary: {
+                        50: '#E3F2FD',
+                        100: '#BBDEFB', 
+                        500: '#1565C0',
+                        600: '#1565C0',
+                        700: '#0D47A1'
+                    },
+                    secondary: {
+                        50: '#E8F5E8',
+                        500: '#2E7D32',
+                        600: '#1B5E20'
+                    },
+                    accent: {
+                        500: '#F57C00',
+                        600: '#E65100'
+                    }
+                }
+            }
+        }
+    };
+    </script>
+    <style>
+        .time-slot-card {
+            transition: all 0.2s ease-in-out;
+        }
+        .time-slot-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px -8px rgba(21, 101, 192, 0.3);
+        }
+        .time-slot-selected {
+            background: linear-gradient(135deg, #1565C0 0%, #1976D2 100%);
+            color: white;
+            border-color: #1565C0;
+        }
+        .admin-sidebar {
+            transition: transform 0.3s ease-in-out;
+        }
+        @media (max-width: 768px) {
+            .admin-sidebar.closed {
+                transform: translateX(-100%);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- Navigation Toggle for Mobile -->
+    <div class="fixed top-4 right-4 z-50 lg:hidden">
+        <button id="viewToggle" class="bg-primary-500 text-white p-3 rounded-full shadow-lg hover:bg-primary-600 transition-colors">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+            </svg>
+        </button>
+    </div>
+
+    <!-- Public Landing Page -->
+    <div id="publicView" class="min-h-screen">
+        <!-- @COMPONENT: Header [logo, title, responsive navigation] -->
+        <header class="bg-white shadow-sm border-b border-gray-200">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center justify-between h-16">
+                    <div class="flex items-center space-x-4">
+                        <!-- Christ's Loving Hands logo placeholder -->
+                        <div class="w-12 h-12 bg-primary-500 rounded-lg flex items-center justify-center">
+                            <span class="text-white font-bold text-lg">CLH</span>
+                        </div>
+                        <div>
+                            <h1 class="text-xl font-semibold text-gray-900">Christ's Loving Hands</h1>
+                            <p class="text-sm text-gray-500">Loads of Love</p>
+                        </div>
+                    </div>
+                    <button class="lg:hidden text-gray-500 hover:text-gray-700">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </header>
+        <!-- @END_COMPONENT: Header -->
+
+        <!-- @COMPONENT: HeroSection [main title, subtitle, call-to-action] -->
+        <section class="bg-white py-12 lg:py-16">
+            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                <h2 class="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">Reserve Your Spot</h2>
+                <p class="text-lg text-gray-600 mb-8">Choose your preferred time slot and complete your reservation below.</p>
+                
+                <!-- @COMPONENT: TimeSlotGrid [responsive grid of available time slots] -->
+                <div class="mb-12">
+                    <h3 class="text-xl font-semibold text-gray-900 mb-6">Available Time Slots</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" data-bind="timeSlots">
+                        <!-- @MAP: timeSlots.map(slot => ( -->
+                        
+                        <!-- Time Slot Card 1 -->
+                        <div class="time-slot-card bg-white border-2 border-gray-200 rounded-xl p-6 cursor-pointer hover:border-primary-500" 
+                             data-mock="true" data-event="click:selectTimeSlot" data-slot-id="slot-1">
+                            <div class="text-center">
+                                <div class="text-lg font-semibold text-gray-900 mb-2" data-bind="slot.date">Tuesday, July 29, 2025</div>
+                                <div class="text-2xl font-bold text-primary-600 mb-3" data-bind="slot.timeRange">5:30 PM - 6:30 PM</div>
+                                <div class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-secondary-50 text-secondary-600">
+                                    <span class="w-2 h-2 bg-secondary-500 rounded-full mr-2"></span>
+                                    <span data-bind="slot.availability">5 spots left</span>
+                                </div>
+                                <div class="mt-4 text-sm text-gray-500" data-bind="slot.location">Community Center - 123 Main St</div>
+                            </div>
+                        </div>
+
+                        <!-- Time Slot Card 2 -->
+                        <div class="time-slot-card time-slot-selected border-2 rounded-xl p-6 cursor-pointer" 
+                             data-mock="true" data-event="click:selectTimeSlot" data-slot-id="slot-2">
+                            <div class="text-center">
+                                <div class="text-lg font-semibold mb-2">Wednesday, July 30, 2025</div>
+                                <div class="text-2xl font-bold mb-3">2:00 PM - 3:00 PM</div>
+                                <div class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-white bg-opacity-20 text-white">
+                                    <span class="w-2 h-2 bg-white rounded-full mr-2"></span>
+                                    <span>3 spots left</span>
+                                </div>
+                                <div class="mt-4 text-sm opacity-90">Community Center - 123 Main St</div>
+                            </div>
+                        </div>
+
+                        <!-- Time Slot Card 3 -->
+                        <div class="time-slot-card bg-white border-2 border-gray-200 rounded-xl p-6 cursor-pointer hover:border-primary-500" 
+                             data-mock="true" data-event="click:selectTimeSlot" data-slot-id="slot-3">
+                            <div class="text-center">
+                                <div class="text-lg font-semibold text-gray-900 mb-2">Friday, August 1, 2025</div>
+                                <div class="text-2xl font-bold text-primary-600 mb-3">10:00 AM - 11:00 AM</div>
+                                <div class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-secondary-50 text-secondary-600">
+                                    <span class="w-2 h-2 bg-secondary-500 rounded-full mr-2"></span>
+                                    <span>8 spots left</span>
+                                </div>
+                                <div class="mt-4 text-sm text-gray-500">Community Center - 123 Main St</div>
+                            </div>
+                        </div>
+
+                        <!-- Full Time Slot Card -->
+                        <div class="time-slot-card bg-gray-50 border-2 border-gray-200 rounded-xl p-6 cursor-pointer hover:border-accent-500" 
+                             data-mock="true" data-event="click:joinWaitlist" data-slot-id="slot-4">
+                            <div class="text-center">
+                                <div class="text-lg font-semibold text-gray-600 mb-2">Saturday, August 2, 2025</div>
+                                <div class="text-2xl font-bold text-gray-600 mb-3">1:00 PM - 2:00 PM</div>
+                                <div class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-accent-100 text-accent-600">
+                                    <span class="w-2 h-2 bg-accent-500 rounded-full mr-2"></span>
+                                    <span>Join Waitlist</span>
+                                </div>
+                                <div class="mt-4 text-sm text-gray-500">Community Center - 123 Main St</div>
+                            </div>
+                        </div>
+
+                        <!-- @END_MAP )) -->
+                    </div>
+                </div>
+                <!-- @END_COMPONENT: TimeSlotGrid -->
+
+                <!-- @COMPONENT: InlineRegistrationForm [appears after time slot selection] -->
+                <div id="registrationForm" class="bg-white border border-gray-200 rounded-xl p-8 shadow-sm max-w-2xl mx-auto">
+                    <h3 class="text-xl font-semibold text-gray-900 mb-6 text-center">Complete Your Reservation</h3>
+                    
+                    <!-- Selected Time Slot Summary -->
+                    <div class="bg-primary-50 border border-primary-200 rounded-lg p-4 mb-6">
+                        <div class="text-center">
+                            <div class="text-sm font-medium text-primary-600 mb-1">Selected Time Slot</div>
+                            <div class="text-lg font-semibold text-primary-900" data-bind="selectedSlot.date">Wednesday, July 30, 2025</div>
+                            <div class="text-primary-700" data-bind="selectedSlot.time">2:00 PM - 3:00 PM</div>
+                        </div>
+                    </div>
+
+                    <form class="space-y-6" data-event="submit:handleRegistration">
+                        <!-- @STATE: formData: {name, email, phone} -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label for="name" class="block text-sm font-medium text-gray-700 mb-2">Full Name *</label>
+                                <input type="text" id="name" name="name" required 
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
+                                       placeholder="Enter your full name" data-mock="true">
+                            </div>
+                            <div>
+                                <label for="email" class="block text-sm font-medium text-gray-700 mb-2">Email Address *</label>
+                                <input type="email" id="email" name="email" required 
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
+                                       placeholder="your.email@example.com" data-mock="true">
+                            </div>
+                        </div>
+                        <div>
+                            <label for="phone" class="block text-sm font-medium text-gray-700 mb-2">Phone Number *</label>
+                            <input type="tel" id="phone" name="phone" required 
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
+                                   placeholder="(555) 123-4567" data-mock="true">
+                        </div>
+                        
+                        <!-- Terms and Notifications -->
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <div class="flex items-start space-x-3">
+                                <input type="checkbox" id="notifications" name="notifications" checked 
+                                       class="mt-1 h-4 w-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500">
+                                <label for="notifications" class="text-sm text-gray-700">
+                                    Send me SMS and email reminders about my reservation
+                                </label>
+                            </div>
+                        </div>
+
+                        <button type="submit" 
+                                class="w-full bg-primary-600 text-white py-4 px-6 rounded-lg font-semibold text-lg hover:bg-primary-700 focus:ring-4 focus:ring-primary-200 transition-all duration-200"
+                                data-implementation="Should validate form and submit registration">
+                            Reserve My Spot
+                        </button>
+
+                        <p class="text-xs text-gray-500 text-center">
+                            By registering, you agree to receive confirmations and reminders. You can cancel anytime using the link in your confirmation email.
+                        </p>
+                    </form>
+                </div>
+                <!-- @END_COMPONENT: InlineRegistrationForm -->
+            </div>
+        </section>
+        <!-- @END_COMPONENT: HeroSection -->
+
+        <!-- @COMPONENT: HowItWorksSection [3-step process explanation] -->
+        <section class="bg-gray-50 py-16">
+            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+                <h3 class="text-2xl font-bold text-gray-900 text-center mb-12">How It Works</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <span class="text-2xl font-bold text-primary-600">1</span>
+                        </div>
+                        <h4 class="text-lg font-semibold text-gray-900 mb-2">Select Your Time</h4>
+                        <p class="text-gray-600">Choose from available time slots that work best for your schedule.</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <span class="text-2xl font-bold text-primary-600">2</span>
+                        </div>
+                        <h4 class="text-lg font-semibold text-gray-900 mb-2">Reserve Your Spot</h4>
+                        <p class="text-gray-600">Fill out the simple form with your contact information.</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <span class="text-2xl font-bold text-primary-600">3</span>
+                        </div>
+                        <h4 class="text-lg font-semibold text-gray-900 mb-2">Come & Enjoy</h4>
+                        <p class="text-gray-600">Arrive at your scheduled time with your laundry - it's completely free!</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- @END_COMPONENT: HowItWorksSection -->
+
+        <!-- Footer -->
+        <footer class="bg-white border-t border-gray-200 py-8">
+            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                <p class="text-gray-600 mb-2">Christ's Loving Hands - Loads of Love</p>
+                <p class="text-sm text-gray-500">Questions? Contact us at (555) 123-4567 or info@christslovinghands.org</p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Admin Dashboard View -->
+    <div id="adminView" class="hidden min-h-screen bg-gray-100">
+        <!-- @COMPONENT: AdminSidebar [navigation menu for admin features] -->
+        <div class="admin-sidebar fixed left-0 top-0 h-full w-64 bg-white shadow-lg z-40 lg:translate-x-0">
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-primary-500 rounded-lg flex items-center justify-center">
+                        <span class="text-white font-bold">CLH</span>
+                    </div>
+                    <div>
+                        <h2 class="font-semibold text-gray-900">Admin Dashboard</h2>
+                        <p class="text-xs text-gray-500">Loads of Love</p>
+                    </div>
+                </div>
+            </div>
+            
+            <nav class="p-4">
+                <ul class="space-y-2">
+                    <li>
+                        <a href="#" class="flex items-center space-x-3 px-3 py-2 bg-primary-50 text-primary-700 rounded-lg font-medium" data-tab="dashboard">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"/>
+                            </svg>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="flex items-center space-x-3 px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg" data-tab="events">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2-2v16a2 2 0 002 2z"/>
+                            </svg>
+                            <span>Events</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="flex items-center space-x-3 px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg" data-tab="registrations">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                            </svg>
+                            <span>Registrations</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="flex items-center space-x-3 px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg" data-tab="blacklist">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728L18.364 5.636 5.636 18.364"/>
+                            </svg>
+                            <span>Blacklist</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="flex items-center space-x-3 px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg" data-tab="analytics">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                            </svg>
+                            <span>Analytics</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+
+            <div class="absolute bottom-4 left-4 right-4">
+                <button class="w-full flex items-center space-x-3 px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                    </svg>
+                    <span>Sign Out</span>
+                </button>
+            </div>
+        </div>
+        <!-- @END_COMPONENT: AdminSidebar -->
+
+        <!-- @COMPONENT: AdminMainContent [dashboard content area] -->
+        <div class="lg:ml-64">
+            <!-- Admin Header -->
+            <header class="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-900">Dashboard</h1>
+                        <p class="text-gray-600">Manage events and registrations</p>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <button class="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 transition-colors">
+                            <span class="hidden sm:inline">Create New Event</span>
+                            <span class="sm:hidden">+ Event</span>
+                        </button>
+                        <div class="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
+                            <span class="text-sm font-medium text-gray-700">JD</span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Dashboard Stats -->
+            <div class="p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-600">Active Events</p>
+                                <p class="text-3xl font-bold text-gray-900" data-bind="stats.activeEvents">8</p>
+                            </div>
+                            <div class="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center">
+                                <svg class="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2-2v16a2 2 0 002 2z"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-600">Total Registrations</p>
+                                <p class="text-3xl font-bold text-gray-900" data-bind="stats.totalRegistrations">156</p>
+                            </div>
+                            <div class="w-12 h-12 bg-secondary-100 rounded-lg flex items-center justify-center">
+                                <svg class="w-6 h-6 text-secondary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-600">Waitlist</p>
+                                <p class="text-3xl font-bold text-gray-900" data-bind="stats.waitlistCount">23</p>
+                            </div>
+                            <div class="w-12 h-12 bg-accent-100 rounded-lg flex items-center justify-center">
+                                <svg class="w-6 h-6 text-accent-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-600">No-show Rate</p>
+                                <p class="text-3xl font-bold text-gray-900" data-bind="stats.noShowRate">8%</p>
+                            </div>
+                            <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+                                <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Events Table -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-lg font-semibold text-gray-900">Recent Events</h3>
+                            <div class="flex items-center space-x-3">
+                                <button class="text-sm text-primary-600 hover:text-primary-700 font-medium">Export CSV</button>
+                                <button class="text-sm bg-primary-600 text-white px-3 py-1 rounded hover:bg-primary-700">View All</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Event</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Registrations</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200" data-bind="recentEvents">
+                                <!-- @MAP: recentEvents.map(event => ( -->
+                                <tr data-mock="true">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-medium text-gray-900" data-bind="event.title">Loads of Love - Community Center</div>
+                                        <div class="text-sm text-gray-500" data-bind="event.location">123 Main St</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900" data-bind="event.date">July 29, 2025</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        <span data-bind="event.confirmedCount">18</span> / <span data-bind="event.capacity">20</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-secondary-100 text-secondary-800">
+                                            Active
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <div class="flex items-center space-x-2">
+                                            <button class="text-primary-600 hover:text-primary-900">Edit</button>
+                                            <button class="text-gray-600 hover:text-gray-900">View</button>
+                                            <button class="text-red-600 hover:text-red-900">Cancel</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                
+                                <tr data-mock="true">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-medium text-gray-900">Loads of Love - Community Center</div>
+                                        <div class="text-sm text-gray-500">123 Main St</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">July 30, 2025</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        <span>15</span> / <span>15</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-accent-100 text-accent-800">
+                                            Full
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <div class="flex items-center space-x-2">
+                                            <button class="text-primary-600 hover:text-primary-900">Edit</button>
+                                            <button class="text-gray-600 hover:text-gray-900">View</button>
+                                            <button class="text-red-600 hover:text-red-900">Cancel</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <!-- @END_MAP )) -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- @END_COMPONENT: AdminMainContent -->
+    </div>
+
+    <!-- Success Confirmation Modal -->
+    <div id="successModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl p-8 max-w-md w-full">
+            <div class="text-center">
+                <div class="w-16 h-16 bg-secondary-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-8 h-8 text-secondary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                    </svg>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-900 mb-2">Reservation Confirmed!</h3>
+                <p class="text-gray-600 mb-6">Your spot has been reserved. Check your email for confirmation details and cancellation link.</p>
+                <button class="w-full bg-primary-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-primary-700 transition-colors"
+                        onclick="document.getElementById('successModal').classList.add('hidden')">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // TODO: Implement business logic, API calls, and state management
+        
+        (function() {
+            // View toggle functionality
+            const viewToggle = document.getElementById('viewToggle');
+            const publicView = document.getElementById('publicView');
+            const adminView = document.getElementById('adminView');
+            
+            let isAdminView = false;
+            
+            viewToggle?.addEventListener('click', function() {
+                isAdminView = !isAdminView;
+                
+                if (isAdminView) {
+                    publicView.classList.add('hidden');
+                    adminView.classList.remove('hidden');
+                    viewToggle.innerHTML = '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>';
+                } else {
+                    publicView.classList.remove('hidden');
+                    adminView.classList.add('hidden');
+                    viewToggle.innerHTML = '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>';
+                }
+            });
+
+            // Time slot selection functionality
+            const timeSlots = document.querySelectorAll('.time-slot-card');
+            const registrationForm = document.getElementById('registrationForm');
+            
+            timeSlots.forEach(slot => {
+                slot.addEventListener('click', function() {
+                    // Remove selection from other slots
+                    timeSlots.forEach(s => s.classList.remove('time-slot-selected'));
+                    
+                    // Add selection to clicked slot
+                    this.classList.add('time-slot-selected');
+                    
+                    // Show registration form
+                    if (registrationForm) {
+                        registrationForm.scrollIntoView({ behavior: 'smooth' });
+                    }
+                });
+            });
+
+            // Form submission
+            const form = document.querySelector('form[data-event="submit:handleRegistration"]');
+            form?.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // Show success modal
+                document.getElementById('successModal')?.classList.remove('hidden');
+            });
+
+            // Admin sidebar toggle for mobile
+            const adminSidebar = document.querySelector('.admin-sidebar');
+            const sidebarToggle = document.querySelector('.lg\\:hidden button');
+            
+            sidebarToggle?.addEventListener('click', function() {
+                adminSidebar?.classList.toggle('closed');
+            });
+        })();
+    </script>
+</body>
+</html>
