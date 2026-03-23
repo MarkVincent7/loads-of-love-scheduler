@@ -9,7 +9,9 @@ export default function RegistrationSuccess() {
   const [location, setLocation] = useLocation();
   
   // Get registration details from URL params
-  const urlParams = new URLSearchParams(window.location.search);
+  const urlParams = new URLSearchParams(
+    typeof window === "undefined" ? "" : window.location.search,
+  );
   const eventTitle = urlParams.get('eventTitle');
   const eventLocation = urlParams.get('eventLocation');
   const startTime = urlParams.get('startTime');
@@ -94,7 +96,7 @@ export default function RegistrationSuccess() {
                 <div className="flex items-start">
                   <MessageSquare className="w-4 h-4 mr-3 text-gray-400 flex-shrink-0 mt-0.5" />
                   <span>
-                    You may receive a text reminder before your appointment
+                    You may receive an email reminder before your appointment
                   </span>
                 </div>
               </div>

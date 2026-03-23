@@ -1,38 +1,49 @@
-import { MailService } from '@sendgrid/mail';
+const MAILERSEND_API_KEY = process.env.MAILERSEND_API_KEY;
+const defaultFromEmail =
+  process.env.MAILERSEND_FROM_EMAIL || "info@christslovinghands.org";
+const defaultFromName =
+  process.env.MAILERSEND_FROM_NAME || "Christ's Loving Hands";
 
-if (!process.env.SENDGRID_API_KEY) {
-  throw new Error("SENDGRID_API_KEY environment variable must be set");
-}
-
-const mailService = new MailService();
-mailService.setApiKey(process.env.SENDGRID_API_KEY);
-
-// Default sender email using ChristsLovingHands.org domain
-const defaultFromEmail = "info@ChristsLovingHands.org";
-const defaultFromName = "Christ's Loving Hands";
-
-interface EmailParams {
+export interface EmailParams {
   to: string;
   subject: string;
   text?: string;
   html: string;
 }
 
-async function sendEmail(params: EmailParams): Promise<boolean> {
+export async function sendEmail(params: EmailParams): Promise<boolean> {
+  if (!MAILERSEND_API_KEY) {
+    console.warn("MAILERSEND_API_KEY not configured, skipping email");
+    return false;
+  }
+
   try {
-    await mailService.send({
-      to: params.to,
-      from: {
-        email: defaultFromEmail,
-        name: defaultFromName
+    const response = await fetch("https://api.mailersend.com/v1/email", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${MAILERSEND_API_KEY}`,
+        "Content-Type": "application/json",
       },
-      subject: params.subject,
-      text: params.text,
-      html: params.html,
+      body: JSON.stringify({
+        from: {
+          email: defaultFromEmail,
+          name: defaultFromName,
+        },
+        to: [{ email: params.to }],
+        subject: params.subject,
+        text: params.text,
+        html: params.html,
+      }),
     });
+
+    if (!response.ok) {
+      console.error("MailerSend email error:", await response.text());
+      return false;
+    }
+
     return true;
   } catch (error) {
-    console.error('SendGrid email error:', error);
+    console.error("MailerSend email error:", error);
     return false;
   }
 }

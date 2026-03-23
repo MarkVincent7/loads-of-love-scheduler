@@ -6,7 +6,6 @@ import {
   admins,
   emailReminders,
   recurringEventTracking,
-  webhookConfig,
   type Event, 
   type InsertEvent,
   type TimeSlot,
@@ -20,12 +19,11 @@ import {
   type InsertAdmin,
   type EventWithSlots,
   type RegistrationWithDetails,
-  type RecurringEventTracking,
-  type WebhookConfig,
-  type InsertWebhookConfig
+  type RecurringEventTracking
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, gte, lte, desc, asc, count, sql } from "drizzle-orm";
+import { getAppUrl } from "./lib/app-url";
 
 export interface IStorage {
   // Events
@@ -46,6 +44,7 @@ export interface IStorage {
   createRegistration(registration: InsertRegistration | InsertAdminRegistration): Promise<Registration>;
   getRegistrationsByEvent(eventId: string): Promise<RegistrationWithDetails[]>;
   getRegistrationByToken(token: string): Promise<Registration | undefined>;
+  getRegistrationById(id: string): Promise<RegistrationWithDetails | undefined>;
   updateRegistration(id: string, registration: Partial<InsertRegistration>): Promise<Registration>;
   cancelRegistration(token: string): Promise<void>;
   updateRegistrationStatus(id: string, status: 'confirmed' | 'waitlist' | 'cancelled' | 'no-show'): Promise<void>;
@@ -65,8 +64,8 @@ export interface IStorage {
   
   // Email reminders
   getUpcomingRegistrations(): Promise<RegistrationWithDetails[]>;
-  checkReminderSent(registrationId: string, reminderType: 'day-before' | 'morning-of'): Promise<boolean>;
-  markReminderSent(registrationId: string, reminderType: 'day-before' | 'morning-of'): Promise<void>;
+  checkReminderSent(registrationId: string, reminderType: 'day-before' | 'morning-of' | 'evening-before'): Promise<boolean>;
+  markReminderSent(registrationId: string, reminderType: 'day-before' | 'morning-of' | 'evening-before'): Promise<void>;
   
   // Analytics
   getEventStats(): Promise<{
@@ -97,10 +96,6 @@ export interface IStorage {
   checkRecurringEventCreated(eventType: 'morning' | 'evening', yearMonth: string): Promise<boolean>;
   trackRecurringEvent(eventType: 'morning' | 'evening', yearMonth: string, eventId: string): Promise<void>;
   getEventByTitle(title: string): Promise<Event | undefined>;
-  
-  // Webhook configuration
-  getWebhookConfig(): Promise<WebhookConfig | undefined>;
-  upsertWebhookConfig(config: InsertWebhookConfig): Promise<WebhookConfig>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -443,8 +438,8 @@ export class DatabaseStorage implements IStorage {
               eventLocation: event.laundromatName ? 
                 `${event.laundromatName}${event.laundromatAddress ? ', ' + event.laundromatAddress : ''}` : 
                 event.location,
-              signUpUrl: `${process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS}` : 'http://localhost:5000'}/register?event=${eventId}&timeSlot=${timeSlotId}`,
-              removeFromWaitlistUrl: `${process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS}` : 'http://localhost:5000'}/cancel/${waitlistRegistration.uniqueCancelToken}`
+              signUpUrl: `${getAppUrl()}/register?event=${eventId}&timeSlot=${timeSlotId}`,
+              removeFromWaitlistUrl: `${getAppUrl()}/cancel/${waitlistRegistration.uniqueCancelToken}`
             });
           }
         }
@@ -772,34 +767,6 @@ export class DatabaseStorage implements IStorage {
       .from(events)
       .where(eq(events.title, title));
     return event || undefined;
-  }
-
-  async getWebhookConfig(): Promise<WebhookConfig | undefined> {
-    const [config] = await db
-      .select()
-      .from(webhookConfig)
-      .where(eq(webhookConfig.id, 'webhook-config'));
-    return config || undefined;
-  }
-
-  async upsertWebhookConfig(config: InsertWebhookConfig): Promise<WebhookConfig> {
-    const [result] = await db
-      .insert(webhookConfig)
-      .values({
-        id: 'webhook-config',
-        ...config,
-        updatedAt: new Date()
-      })
-      .onConflictDoUpdate({
-        target: webhookConfig.id,
-        set: {
-          webhookUrl: config.webhookUrl,
-          enabled: config.enabled,
-          updatedAt: new Date()
-        }
-      })
-      .returning();
-    return result;
   }
 }
 

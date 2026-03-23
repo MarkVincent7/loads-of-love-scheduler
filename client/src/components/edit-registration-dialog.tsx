@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useUpdateRegistration } from "@/hooks/use-admin";
@@ -33,7 +33,7 @@ export default function EditRegistrationDialog({ children, registration }: EditR
     defaultValues: {
       name: registration.name,
       email: registration.email,
-      phone: registration.phone,
+      phone: registration.phone ?? "",
       status: registration.status as 'confirmed' | 'waitlist' | 'cancelled',
     },
   });
@@ -43,12 +43,12 @@ export default function EditRegistrationDialog({ children, registration }: EditR
     form.reset({
       name: registration.name,
       email: registration.email,
-      phone: registration.phone,
+      phone: registration.phone ?? "",
       status: registration.status as 'confirmed' | 'waitlist' | 'cancelled',
     });
   }, [registration, form]);
 
-  const onSubmit = (data: RegistrationFormData) => {
+  const onSubmit: SubmitHandler<RegistrationFormData> = (data) => {
     updateRegistrationMutation.mutate({
       id: registration.id,
       registrationData: data,

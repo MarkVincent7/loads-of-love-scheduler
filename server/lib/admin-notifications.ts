@@ -1,193 +1,107 @@
-import { MailService } from '@sendgrid/mail';
-import type { Registration, Event, TimeSlot } from '@shared/schema';
-import { formatEmailDate, formatEmailTime } from '@shared/timezone';
+import type { Event, Registration, TimeSlot } from "@shared/schema";
+import { formatEmailDate, formatEmailTime } from "@shared/timezone";
+import { sendEmail } from "./sendgrid";
 
-// Admin notification email addresses
-const ADMIN_EMAILS = [
-  'Mark@ChristsLovingHands.org',
-  'Melanie@ChristsLovingHands.org'
-];
-
-const FROM_EMAIL = 'info@ChristsLovingHands.org';
+const ADMIN_EMAILS = (process.env.ADMIN_NOTIFICATION_EMAILS ||
+  "Mark@ChristsLovingHands.org,Melanie@ChristsLovingHands.org")
+  .split(",")
+  .map((email) => email.trim())
+  .filter(Boolean);
 
 interface NotificationData {
   registration: Registration;
-  event: Event;  
+  event: Event;
   timeSlot: TimeSlot;
 }
 
-/**
- * Send notification to admins about new registration
- */
+async function sendAdminNotification(subject: string, html: string) {
+  await Promise.all(
+    ADMIN_EMAILS.map(async (email) => {
+      try {
+        await sendEmail({ to: email, subject, html });
+      } catch (error) {
+        console.error(`Failed to send admin email to ${email}:`, error);
+      }
+    }),
+  );
+}
+
+function buildEventDetails(event: Event, timeSlot: TimeSlot) {
+  return {
+    eventDate: formatEmailDate(timeSlot.startTime),
+    eventTime: `${formatEmailTime(timeSlot.startTime)} - ${formatEmailTime(timeSlot.endTime)}`,
+    eventLocation: event.laundromatName
+      ? `${event.laundromatName}${event.laundromatAddress ? `, ${event.laundromatAddress}` : ""}`
+      : event.location,
+  };
+}
+
 export async function sendNewRegistrationNotification(data: NotificationData) {
   const { registration, event, timeSlot } = data;
-  
-  const eventDate = formatEmailDate(timeSlot.startTime);
-  const eventTime = `${formatEmailTime(timeSlot.startTime)} - ${formatEmailTime(timeSlot.endTime)}`;
-  
-  const subject = `New Registration: ${event.title}`;
-  
-  const html = `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-      <h2 style="color: #2563eb;">New Registration Received</h2>
-      
-      <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
-        <h3 style="margin-top: 0; color: #1e40af;">Event Details</h3>
+  const details = buildEventDetails(event, timeSlot);
+
+  await sendAdminNotification(
+    `New Registration: ${event.title}`,
+    `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #2563eb;">New Registration Received</h2>
         <p><strong>Event:</strong> ${event.title}</p>
-        <p><strong>Date:</strong> ${eventDate}</p>
-        <p><strong>Time:</strong> ${eventTime}</p>
-        <p><strong>Location:</strong> ${event.location}</p>
-      </div>
-      
-      <div style="background-color: #f0f9ff; padding: 20px; border-radius: 8px; margin: 20px 0;">
-        <h3 style="margin-top: 0; color: #1e40af;">Registrant Information</h3>
+        <p><strong>Date:</strong> ${details.eventDate}</p>
+        <p><strong>Time:</strong> ${details.eventTime}</p>
+        <p><strong>Location:</strong> ${details.eventLocation}</p>
+        <hr />
         <p><strong>Name:</strong> ${registration.name}</p>
         <p><strong>Email:</strong> ${registration.email}</p>
-        ${registration.phone ? `<p><strong>Phone:</strong> ${registration.phone}</p>` : ''}
-        ${registration.address ? `<p><strong>Address:</strong> ${registration.address}${registration.city ? ', ' + registration.city : ''}${registration.state ? ', ' + registration.state : ''}${registration.zipCode ? ' ' + registration.zipCode : ''}</p>` : ''}
-        <p><strong>Status:</strong> <span style="color: ${registration.status === 'confirmed' ? '#059669' : '#d97706'}; font-weight: bold;">${registration.status.toUpperCase()}</span></p>
+        ${registration.phone ? `<p><strong>Phone:</strong> ${registration.phone}</p>` : ""}
+        ${registration.address ? `<p><strong>Address:</strong> ${registration.address}${registration.city ? `, ${registration.city}` : ""}${registration.state ? `, ${registration.state}` : ""}${registration.zipCode ? ` ${registration.zipCode}` : ""}</p>` : ""}
+        <p><strong>Status:</strong> ${registration.status.toUpperCase()}</p>
       </div>
-      
-      <p style="color: #6b7280; font-size: 14px;">
-        This is an automated notification from the Loads of Love registration system.
-      </p>
-    </div>
-  `;
-  
-  // Initialize SendGrid
-  const mailService = new MailService();
-  mailService.setApiKey(process.env.SENDGRID_API_KEY!);
-  
-  // Send to all admin emails
-  for (const adminEmail of ADMIN_EMAILS) {
-    try {
-      await mailService.send({
-        to: adminEmail,
-        from: FROM_EMAIL,
-        subject,
-        html
-      });
-    } catch (error) {
-      console.error(`Failed to send new registration notification to ${adminEmail}:`, error);
-    }
-  }
+    `,
+  );
 }
 
-/**
- * Send notification to admins about registration cancellation
- */
 export async function sendCancellationNotification(data: NotificationData) {
   const { registration, event, timeSlot } = data;
-  
-  const eventDate = formatEmailDate(timeSlot.startTime);
-  const eventTime = `${formatEmailTime(timeSlot.startTime)} - ${formatEmailTime(timeSlot.endTime)}`;
-  
-  const subject = `Registration Cancelled: ${event.title}`;
-  
-  const html = `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-      <h2 style="color: #dc2626;">Registration Cancelled</h2>
-      
-      <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
-        <h3 style="margin-top: 0; color: #1e40af;">Event Details</h3>
+  const details = buildEventDetails(event, timeSlot);
+
+  await sendAdminNotification(
+    `Registration Cancelled: ${event.title}`,
+    `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #dc2626;">Registration Cancelled</h2>
         <p><strong>Event:</strong> ${event.title}</p>
-        <p><strong>Date:</strong> ${eventDate}</p>
-        <p><strong>Time:</strong> ${eventTime}</p>
-        <p><strong>Location:</strong> ${event.location}</p>
-      </div>
-      
-      <div style="background-color: #fef2f2; padding: 20px; border-radius: 8px; margin: 20px 0;">
-        <h3 style="margin-top: 0; color: #dc2626;">Cancelled Registration</h3>
+        <p><strong>Date:</strong> ${details.eventDate}</p>
+        <p><strong>Time:</strong> ${details.eventTime}</p>
+        <p><strong>Location:</strong> ${details.eventLocation}</p>
+        <hr />
         <p><strong>Name:</strong> ${registration.name}</p>
         <p><strong>Email:</strong> ${registration.email}</p>
-        ${registration.phone ? `<p><strong>Phone:</strong> ${registration.phone}</p>` : ''}
-        <p><strong>Previous Status:</strong> ${registration.status.toUpperCase()}</p>
+        ${registration.phone ? `<p><strong>Phone:</strong> ${registration.phone}</p>` : ""}
+        <p><strong>Status:</strong> ${registration.status.toUpperCase()}</p>
       </div>
-      
-      <p style="color: #6b7280; font-size: 14px;">
-        This is an automated notification from the Loads of Love registration system.
-      </p>
-    </div>
-  `;
-  
-  // Initialize SendGrid
-  const mailService = new MailService();
-  mailService.setApiKey(process.env.SENDGRID_API_KEY!);
-  
-  // Send to all admin emails
-  for (const adminEmail of ADMIN_EMAILS) {
-    try {
-      await mailService.send({
-        to: adminEmail,
-        from: FROM_EMAIL,
-        subject,
-        html
-      });
-    } catch (error) {
-      console.error(`Failed to send cancellation notification to ${adminEmail}:`, error);
-    }
-  }
+    `,
+  );
 }
 
-/**
- * Send notification to admins about waitlist addition
- */
 export async function sendWaitlistNotification(data: NotificationData) {
   const { registration, event, timeSlot } = data;
-  
-  const eventDate = formatEmailDate(timeSlot.startTime);
-  const eventTime = `${formatEmailTime(timeSlot.startTime)} - ${formatEmailTime(timeSlot.endTime)}`;
-  
-  const subject = `Waitlist Addition: ${event.title}`;
-  
-  const html = `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-      <h2 style="color: #d97706;">New Waitlist Registration</h2>
-      
-      <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
-        <h3 style="margin-top: 0; color: #1e40af;">Event Details</h3>
+  const details = buildEventDetails(event, timeSlot);
+
+  await sendAdminNotification(
+    `Waitlist Addition: ${event.title}`,
+    `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #d97706;">New Waitlist Registration</h2>
         <p><strong>Event:</strong> ${event.title}</p>
-        <p><strong>Date:</strong> ${eventDate}</p>
-        <p><strong>Time:</strong> ${eventTime}</p>
-        <p><strong>Location:</strong> ${event.location}</p>
-      </div>
-      
-      <div style="background-color: #fffbeb; padding: 20px; border-radius: 8px; margin: 20px 0;">
-        <h3 style="margin-top: 0; color: #d97706;">Waitlist Registration</h3>
+        <p><strong>Date:</strong> ${details.eventDate}</p>
+        <p><strong>Time:</strong> ${details.eventTime}</p>
+        <p><strong>Location:</strong> ${details.eventLocation}</p>
+        <hr />
         <p><strong>Name:</strong> ${registration.name}</p>
         <p><strong>Email:</strong> ${registration.email}</p>
-        ${registration.phone ? `<p><strong>Phone:</strong> ${registration.phone}</p>` : ''}
-        ${registration.address ? `<p><strong>Address:</strong> ${registration.address}${registration.city ? ', ' + registration.city : ''}${registration.state ? ', ' + registration.state : ''}${registration.zipCode ? ' ' + registration.zipCode : ''}</p>` : ''}
-        <p><strong>Status:</strong> <span style="color: #d97706; font-weight: bold;">WAITLIST</span></p>
+        ${registration.phone ? `<p><strong>Phone:</strong> ${registration.phone}</p>` : ""}
+        <p><strong>Status:</strong> WAITLIST</p>
       </div>
-      
-      <div style="background-color: #f0f9ff; padding: 15px; border-radius: 8px; margin: 20px 0;">
-        <p style="margin: 0; color: #1e40af; font-size: 14px;">
-          <strong>Note:</strong> This person will be notified when a slot becomes available and can then complete their registration.
-        </p>
-      </div>
-      
-      <p style="color: #6b7280; font-size: 14px;">
-        This is an automated notification from the Loads of Love registration system.
-      </p>
-    </div>
-  `;
-  
-  // Initialize SendGrid
-  const mailService = new MailService();
-  mailService.setApiKey(process.env.SENDGRID_API_KEY!);
-  
-  // Send to all admin emails
-  for (const adminEmail of ADMIN_EMAILS) {
-    try {
-      await mailService.send({
-        to: adminEmail,
-        from: FROM_EMAIL,
-        subject,
-        html
-      });
-    } catch (error) {
-      console.error(`Failed to send waitlist notification to ${adminEmail}:`, error);
-    }
-  }
+    `,
+  );
 }

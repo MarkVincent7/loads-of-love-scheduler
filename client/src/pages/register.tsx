@@ -45,7 +45,9 @@ export default function Register() {
   });
   
   // Get time slot ID from URL search params
-  const urlParams = new URLSearchParams(window.location.search);
+  const urlParams = new URLSearchParams(
+    typeof window === "undefined" ? "" : window.location.search,
+  );
   const timeSlotId = urlParams.get('timeSlot');
   const eventId = urlParams.get('event');
 
