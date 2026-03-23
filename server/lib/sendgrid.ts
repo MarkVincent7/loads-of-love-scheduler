@@ -790,20 +790,9 @@ export async function sendReminderEmail(
     eventLocation: string;
     cancelUrl: string;
   },
-  reminderType: 'day-before' | 'hour-before' | 'evening-before'
 ) {
-  let reminderTitle, reminderText;
-  
-  if (reminderType === 'day-before') {
-    reminderTitle = 'Tomorrow';
-    reminderText = 'This is a friendly reminder that your laundry appointment is tomorrow.';
-  } else if (reminderType === 'evening-before') {
-    reminderTitle = 'Tomorrow Morning';
-    reminderText = 'This is a friendly reminder that your laundry appointment is tomorrow morning.';
-  } else {
-    reminderTitle = 'In 1 Hour';
-    reminderText = 'This is a reminder that your laundry appointment is in 1 hour.';
-  }
+  const reminderTitle = "Tomorrow";
+  const reminderText = "This is a friendly reminder that your laundry appointment is tomorrow.";
 
   const emailData = {
     to: details.email,
@@ -929,13 +918,13 @@ export async function sendReminderEmail(
   try {
     const success = await sendEmail(emailData);
     if (success) {
-      console.log(`✓ ${reminderType} reminder email sent to ${details.email}`);
+      console.log(`✓ day-before reminder email sent to ${details.email}`);
     } else {
-      console.error(`Failed to send ${reminderType} reminder email to ${details.email}`);
+      console.error(`Failed to send day-before reminder email to ${details.email}`);
     }
     return success;
   } catch (error) {
-    console.error(`Failed to send ${reminderType} reminder email:`, error);
+    console.error("Failed to send day-before reminder email:", error);
     return false;
   }
 }

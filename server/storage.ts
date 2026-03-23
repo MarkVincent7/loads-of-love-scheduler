@@ -64,8 +64,8 @@ export interface IStorage {
   
   // Email reminders
   getUpcomingRegistrations(): Promise<RegistrationWithDetails[]>;
-  checkReminderSent(registrationId: string, reminderType: 'day-before' | 'morning-of' | 'evening-before'): Promise<boolean>;
-  markReminderSent(registrationId: string, reminderType: 'day-before' | 'morning-of' | 'evening-before'): Promise<void>;
+  checkReminderSent(registrationId: string, reminderType: "day-before"): Promise<boolean>;
+  markReminderSent(registrationId: string, reminderType: "day-before"): Promise<void>;
   
   // Analytics
   getEventStats(): Promise<{
@@ -558,7 +558,7 @@ export class DatabaseStorage implements IStorage {
     }));
   }
 
-  async checkReminderSent(registrationId: string, reminderType: 'day-before' | 'morning-of' | 'evening-before'): Promise<boolean> {
+  async checkReminderSent(registrationId: string, reminderType: "day-before"): Promise<boolean> {
     const result = await db
       .select({ count: count() })
       .from(emailReminders)
@@ -570,7 +570,7 @@ export class DatabaseStorage implements IStorage {
     return (result[0]?.count || 0) > 0;
   }
 
-  async markReminderSent(registrationId: string, reminderType: 'day-before' | 'morning-of' | 'evening-before'): Promise<void> {
+  async markReminderSent(registrationId: string, reminderType: "day-before"): Promise<void> {
     await db.insert(emailReminders).values({
       registrationId,
       reminderType,

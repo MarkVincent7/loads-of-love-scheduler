@@ -18,14 +18,16 @@ function buildCancelUrl(token: string) {
   return `${getAppUrl()}/cancel/${token}`;
 }
 
-async function sendReminder(
-  registration: RegistrationWithDetails,
-  reminderType: "day-before" | "morning-of" | "evening-before",
-  emailVariant: "day-before" | "hour-before" | "evening-before",
-) {
-  const alreadySent = await storage.checkReminderSent(registration.id, reminderType);
+function getDateKey(date: Date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(
+    date.getDate(),
+  ).padStart(2, "0")}`;
+}
+
+async function sendReminder(registration: RegistrationWithDetails) {
+  const alreadySent = await storage.checkReminderSent(registration.id, "day-before");
   if (alreadySent) {
-    return;
+    return false;
   }
 
   await sendReminderEmail(
@@ -40,49 +42,35 @@ async function sendReminder(
         : registration.event.location,
       cancelUrl: buildCancelUrl(registration.uniqueCancelToken),
     },
-    emailVariant,
   );
 
-  await storage.markReminderSent(registration.id, reminderType);
+  await storage.markReminderSent(registration.id, "day-before");
+  return true;
 }
 
 export async function processReminderCron() {
   const upcomingRegistrations = await storage.getUpcomingRegistrations();
   const nowEastern = getCurrentEasternTime();
-  const currentHour = nowEastern.getHours();
-
-  if (currentHour < 9 || currentHour >= 20) {
-    return { processed: 0, skipped: "outside reminder window" };
-  }
+  const reminderDate = new Date(nowEastern);
+  reminderDate.setDate(reminderDate.getDate() + 1);
+  const reminderDateKey = getDateKey(reminderDate);
 
   let processed = 0;
 
   for (const registration of upcomingRegistrations) {
     const appointmentTimeEastern = convertToEasternTime(registration.timeSlot.startTime);
-    const hoursDiff =
-      (appointmentTimeEastern.getTime() - nowEastern.getTime()) / (1000 * 60 * 60);
-    const appointmentHour = appointmentTimeEastern.getHours();
-    const isMorningEvent = appointmentHour < 12;
-
-    if (hoursDiff <= 28 && hoursDiff > 20) {
-      await sendReminder(registration, "day-before", "day-before");
-      processed += 1;
-      continue;
-    }
-
-    if (isMorningEvent && hoursDiff <= 16 && hoursDiff > 12) {
-      await sendReminder(registration, "evening-before", "evening-before");
-      processed += 1;
-      continue;
-    }
-
-    if (!isMorningEvent && hoursDiff <= 6 && hoursDiff > 2) {
-      await sendReminder(registration, "morning-of", "hour-before");
-      processed += 1;
+    if (getDateKey(appointmentTimeEastern) === reminderDateKey) {
+      const sent = await sendReminder(registration);
+      if (sent) {
+        processed += 1;
+      }
     }
   }
 
-  return { processed };
+  return {
+    processed,
+    reminderDate: reminderDateKey,
+  };
 }
 
 async function createRecurringEvent(

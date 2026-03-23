@@ -40,9 +40,10 @@ Set these env vars in Vercel and locally:
 - Target account: `mark-7862`
 - Project name: `loads-of-love-scheduler`
 
-Vercel Hobby does not support the hourly cron schedule this app needs for reminders, so the project does not use Vercel Cron.
+Vercel Hobby does not support the scheduling flexibility this app originally used for reminders, so the project does not use Vercel Cron.
 Instead:
 
+- confirmation emails are sent immediately when a registration is created
 - reminder emails are triggered by Supabase Cron using `pg_cron` + `pg_net`
 - recurring monthly events are created lazily inside the app whenever events are fetched, so they do not require a scheduler
 
@@ -66,7 +67,8 @@ Use the existing Servingnetwork Supabase project to schedule reminder processing
 2. Set the correct production app URL and cron secret in `supabase/cron/0000_loads_of_love_jobs.sql`.
 3. Run that SQL.
 
-This creates one hourly Supabase Cron job that calls the app endpoint `/api/cron/reminders`.
+This creates one daily Supabase Cron job that calls the app endpoint `/api/cron/reminders`.
+The app sends one reminder per confirmed registration on the day before the appointment.
 
 ## Verification
 
