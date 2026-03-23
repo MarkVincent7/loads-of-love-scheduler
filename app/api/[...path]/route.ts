@@ -579,6 +579,11 @@ async function handleRequest(request: NextRequest, context: RouteContext) {
 
   try {
     if (request.method === "GET" && pathKey === "events") {
+      try {
+        await processRecurringEventCron();
+      } catch (error) {
+        console.error("Error ensuring recurring events:", error);
+      }
       return NextResponse.json(await storage.getActiveEvents());
     }
 
@@ -657,6 +662,11 @@ async function handleRequest(request: NextRequest, context: RouteContext) {
     }
 
     if (request.method === "GET" && pathKey === "admin/events") {
+      try {
+        await processRecurringEventCron();
+      } catch (error) {
+        console.error("Error ensuring recurring events:", error);
+      }
       return NextResponse.json(await storage.getAllEvents());
     }
 

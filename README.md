@@ -13,6 +13,7 @@ Next.js rebuild of the Christ's Loving Hands Loads of Love scheduling app, desig
 
 - Schema SQL: `supabase/migrations/0000_parched_mastermind.sql`
 - Seed SQL: `supabase/seeds/0000_loads_of_love_seed.sql`
+- Supabase reminder scheduler SQL: `supabase/cron/0000_loads_of_love_jobs.sql`
 
 Import order:
 
@@ -38,7 +39,12 @@ Set these env vars in Vercel and locally:
 
 - Target account: `mark-7862`
 - Project name: `loads-of-love-scheduler`
-- Cron jobs are defined in `vercel.json`
+
+Vercel Hobby does not support the hourly cron schedule this app needs for reminders, so the project does not use Vercel Cron.
+Instead:
+
+- reminder emails are triggered by Supabase Cron using `pg_cron` + `pg_net`
+- recurring monthly events are created lazily inside the app whenever events are fetched, so they do not require a scheduler
 
 Required Vercel env vars:
 
@@ -51,6 +57,16 @@ Required Vercel env vars:
 - `MAILERSEND_FROM_NAME`
 - `ADMIN_NOTIFICATION_EMAILS`
 - `CRON_SECRET`
+
+## Supabase Cron
+
+Use the existing Servingnetwork Supabase project to schedule reminder processing.
+
+1. Open the SQL editor in Supabase.
+2. Set the correct production app URL and cron secret in `supabase/cron/0000_loads_of_love_jobs.sql`.
+3. Run that SQL.
+
+This creates one hourly Supabase Cron job that calls the app endpoint `/api/cron/reminders`.
 
 ## Verification
 
